@@ -24,6 +24,12 @@
             --shadow: rgba(0, 0, 0, 0.1);
             --accent-color: #007bff;
             --chart-text: #212529; /* Chart text color for light theme */
+            
+            /* Tooltip Variables - Dark theme for all tooltips */
+            --tooltip-bg: #111827;
+            --tooltip-text: #ffffff;
+            --tooltip-border: rgba(255, 255, 255, 0.06);
+            --tooltip-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         [data-theme="dark"] {
@@ -54,6 +60,117 @@
         /* Ensure chart tooltips use theme colors */
         .chartjs-tooltip {
             color: var(--chart-text) !important;
+        }
+
+        /* Global Tooltip Styling - Force dark theme for all tooltips */
+        .chartjs-tooltip,
+        .apexcharts-tooltip,
+        .recharts-tooltip-wrapper,
+        .echarts-tooltip,
+        [class*="tooltip"],
+        [id*="tooltip"] {
+            background: var(--tooltip-bg) !important;
+            color: var(--tooltip-text) !important;
+            border: 1px solid var(--tooltip-border) !important;
+            box-shadow: var(--tooltip-shadow) !important;
+            border-radius: 6px !important;
+        }
+
+        /* Chart.js specific tooltip overrides */
+        .chartjs-tooltip {
+            background: var(--tooltip-bg) !important;
+            color: var(--tooltip-text) !important;
+            border: 1px solid var(--tooltip-border) !important;
+            box-shadow: var(--tooltip-shadow) !important;
+        }
+
+        /* ApexCharts tooltip overrides */
+        .apexcharts-tooltip {
+            background: var(--tooltip-bg) !important;
+            color: var(--tooltip-text) !important;
+            border: 1px solid var(--tooltip-border) !important;
+            box-shadow: var(--tooltip-shadow) !important;
+        }
+
+        .apexcharts-tooltip .apexcharts-tooltip-title {
+            background: var(--tooltip-bg) !important;
+            color: var(--tooltip-text) !important;
+            border-bottom: 1px solid var(--tooltip-border) !important;
+        }
+
+        .apexcharts-tooltip .apexcharts-tooltip-series-group {
+            background: var(--tooltip-bg) !important;
+            color: var(--tooltip-text) !important;
+        }
+
+        /* Recharts tooltip overrides */
+        .recharts-tooltip-wrapper {
+            background: var(--tooltip-bg) !important;
+            color: var(--tooltip-text) !important;
+            border: 1px solid var(--tooltip-border) !important;
+            box-shadow: var(--tooltip-shadow) !important;
+        }
+
+        .recharts-tooltip-wrapper .recharts-tooltip-label {
+            color: var(--tooltip-text) !important;
+        }
+
+        .recharts-tooltip-wrapper .recharts-tooltip-item {
+            color: var(--tooltip-text) !important;
+        }
+
+        /* ECharts tooltip overrides */
+        .echarts-tooltip {
+            background: var(--tooltip-bg) !important;
+            color: var(--tooltip-text) !important;
+            border: 1px solid var(--tooltip-border) !important;
+            box-shadow: var(--tooltip-shadow) !important;
+        }
+
+        /* Custom tooltip container for accessibility */
+        #chartjs-custom-tooltip {
+            background: var(--tooltip-bg) !important;
+            color: var(--tooltip-text) !important;
+            border: 1px solid var(--tooltip-border) !important;
+            box-shadow: var(--tooltip-shadow) !important;
+            border-radius: 6px !important;
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+            font-family: 'Inter', sans-serif !important;
+            pointer-events: none !important;
+            z-index: 1000 !important;
+            position: absolute !important;
+            opacity: 0 !important;
+            transition: opacity 0.2s ease !important;
+            max-width: 200px !important;
+            word-wrap: break-word !important;
+        }
+
+        #chartjs-custom-tooltip.show {
+            opacity: 1 !important;
+        }
+
+        /* External tooltip content styling */
+        #chartjs-custom-tooltip .tooltip-title {
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: var(--tooltip-text) !important;
+        }
+
+        #chartjs-custom-tooltip .tooltip-body {
+            font-size: 12px;
+            margin-bottom: 2px;
+            color: var(--tooltip-text) !important;
+        }
+
+        #chartjs-custom-tooltip .tooltip-color {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            margin-right: 6px;
+            vertical-align: middle;
         }
 
         .btn-primary {
@@ -703,13 +820,6 @@
                             <p class="text-xs" style="color: var(--text-muted);">Returns are shown once deposits are made.</p>
                         </div>
                         
-                        <!-- Achievements Section -->
-                        <div class="rounded-lg shadow-sm p-6 mb-8" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
-                            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">🏆 Achievements</h3>
-                            <div class="achievements-container grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 text-center">
-                                <!-- Badges will be injected here -->
-                            </div>
-                        </div>
 
 
                         <!-- Charts -->
@@ -825,7 +935,6 @@
                                 <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
                                     <div class="flex justify-between items-center mb-4">
                                         <h3 class="font-semibold" style="color: var(--text-primary);">Most Common Mistakes</h3>
-                                        <span class="text-sm" style="color: var(--text-muted);">Last 1 month</span>
                                     </div>
                                     <div class="relative h-64">
                                         <canvas id="mostCommonMistakesChart"></canvas>
@@ -1421,8 +1530,18 @@
                             </div>
                         </div>
 
+                        <!-- Achievements Section -->
                         <div class="mt-12">
-                            <h3 class="text-2xl font-bold mb-6" style="color: var(--text-primary);">Challenge History</h3>
+                            <div class="rounded-lg shadow-sm p-6 mb-8" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">                                                             
+                                <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">🏆 Achievements</h3>                                                                                             
+                                <div class="achievements-container grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 text-center">                                                                    
+                                    <!-- Badges will be injected here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-12">
+                            <h3 class="text-2xl font-bold mb-6" style="color: var(--text-primary);">Challenge History</h3>                                                                                         
                             <div id="challenge-history-container" class="space-y-4">
                                 <!-- History items will be injected here -->
                             </div>
@@ -1920,10 +2039,10 @@
                 mode: 'index',
                 intersect: false,
                 position: 'nearest',
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                titleColor: themeColors.chartText || themeColors.textColor,
-                bodyColor: themeColors.chartText || themeColors.textColor,
-                borderColor: 'rgba(255, 255, 255, 0.2)',
+                backgroundColor: '#111827', // Use dark background for all tooltips
+                titleColor: '#ffffff', // White text for all tooltips
+                bodyColor: '#ffffff', // White text for all tooltips
+                borderColor: 'rgba(255, 255, 255, 0.06)',
                 borderWidth: 1,
                 cornerRadius: 6,
                 displayColors: true,
@@ -1968,14 +2087,14 @@
                             }
                         }
                         
-                        // Update tooltip colors and continuous mode
+                        // Update tooltip colors and continuous mode - Force dark theme for all tooltips
                         if (chart.options && chart.options.plugins && chart.options.plugins.tooltip) {
-                            if (chart.options.plugins.tooltip.titleColor) {
-                                chart.options.plugins.tooltip.titleColor = colors.chartText || colors.textColor;
-                            }
-                            if (chart.options.plugins.tooltip.bodyColor) {
-                                chart.options.plugins.tooltip.bodyColor = colors.chartText || colors.textColor;
-                            }
+                            // Force all tooltips to use dark theme regardless of page theme
+                            chart.options.plugins.tooltip.backgroundColor = '#111827';
+                            chart.options.plugins.tooltip.titleColor = '#ffffff';
+                            chart.options.plugins.tooltip.bodyColor = '#ffffff';
+                            chart.options.plugins.tooltip.borderColor = 'rgba(255, 255, 255, 0.06)';
+                            
                             // Ensure continuous tooltip mode is enabled
                             chart.options.plugins.tooltip.mode = 'index';
                             chart.options.plugins.tooltip.intersect = false;
@@ -2304,6 +2423,7 @@
             renderReports();
             renderStatement();
             renderChallenge();
+            renderAchievements();
         };
 
         const updateLedgerDependentUI = () => {
@@ -2362,6 +2482,7 @@
             if (pageId === 'challenge') {
                 renderChallenge();
                 renderChallengeHistory();
+                renderAchievements();
             }
         };
         navItems.forEach(item => {
@@ -5457,11 +5578,23 @@
                                     display: false
                                 },
                                 tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    backgroundColor: '#111827',
                                     titleColor: '#ffffff',
                                     bodyColor: '#ffffff',
-                                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                                    borderColor: 'rgba(255, 255, 255, 0.06)',
                                     borderWidth: 1,
+                                    cornerRadius: 6,
+                                    padding: 12,
+                                    titleFont: {
+                                        size: 13,
+                                        weight: 'bold'
+                                    },
+                                    bodyFont: {
+                                        size: 12
+                                    },
+                                    animation: {
+                                        duration: 0
+                                    },
                                     callbacks: {
                                         title: function(context) {
                                             return context[0].label;
@@ -5477,24 +5610,30 @@
                                     beginAtZero: true,
                                     ticks: {
                                         stepSize: 1,
-                                        color: 'var(--chart-text)',
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 12
                                         }
                                     },
                                     grid: {
-                                        color: 'rgba(0, 0, 0, 0.1)',
+                                        color: 'rgba(128, 128, 128, 0.1)',
                                         drawBorder: false
+                                    },
+                                    title: {
+                                        display: false
                                     }
                                 },
                                 y: {
                                     ticks: {
-                                        color: 'var(--chart-text)',
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 12
                                         }
                                     },
                                     grid: {
+                                        display: false
+                                    },
+                                    title: {
                                         display: false
                                     }
                                 }
@@ -6007,7 +6146,87 @@
             }, 200);
         });
 
+        // External Tooltip Support for Chart.js
+        const externalTooltipHandler = (context) => {
+            const { chart, tooltip } = context;
+            const tooltipEl = document.getElementById('chartjs-custom-tooltip');
+
+            // Hide if no tooltip
+            if (tooltip.opacity === 0) {
+                tooltipEl.style.opacity = '0';
+                tooltipEl.setAttribute('aria-hidden', 'true');
+                return;
+            }
+
+            // Set caret Position
+            tooltipEl.classList.remove('above', 'below', 'no-transform');
+            if (tooltip.yAlign) {
+                tooltipEl.classList.add(tooltip.yAlign);
+            }
+
+            // Set Text
+            if (tooltip.body) {
+                const titleLines = tooltip.title || [];
+                const bodyLines = tooltip.body.map(b => b.lines);
+
+                let innerHtml = '';
+
+                titleLines.forEach(title => {
+                    innerHtml += `<div class="tooltip-title">${title}</div>`;
+                });
+
+                bodyLines.forEach((body, i) => {
+                    const colors = tooltip.labelColors[i];
+                    let style = `background:${colors.backgroundColor}`;
+                    style += `; border-color:${colors.borderColor}`;
+                    style += `; border-width: 2px`;
+                    const span = `<span class="tooltip-color" style="${style}"></span>`;
+                    innerHtml += `<div class="tooltip-body">${span}${body}</div>`;
+                });
+
+                tooltipEl.innerHTML = innerHtml;
+            }
+
+            const position = Chart.helpers.getRelativePosition(tooltip.caretX, tooltip.caretY, chart);
+            tooltipEl.style.left = position.x + tooltip.caretX + 'px';
+            tooltipEl.style.top = position.y + tooltip.caretY + 'px';
+            tooltipEl.style.opacity = '1';
+            tooltipEl.setAttribute('aria-hidden', 'false');
+        };
+
+        // Touch and Mouse Event Handlers for Tooltips
+        const setupTooltipEvents = () => {
+            const tooltipEl = document.getElementById('chartjs-custom-tooltip');
+            
+            // Hide tooltip on mouseout
+            document.addEventListener('mouseout', (e) => {
+                if (!e.relatedTarget || !e.relatedTarget.closest('canvas')) {
+                    tooltipEl.style.opacity = '0';
+                    tooltipEl.setAttribute('aria-hidden', 'true');
+                }
+            });
+
+            // Touch support
+            document.addEventListener('touchstart', (e) => {
+                if (e.target.closest('canvas')) {
+                    // Touch events will be handled by Chart.js
+                }
+            });
+
+            // Hide tooltip on blur
+            document.addEventListener('blur', () => {
+                tooltipEl.style.opacity = '0';
+                tooltipEl.setAttribute('aria-hidden', 'true');
+            });
+        };
+
+        // Initialize tooltip events
+        setupTooltipEvents();
+
     </script>
+
+    <!-- Custom Tooltip Container for Accessibility -->
+    <div id="chartjs-custom-tooltip" aria-live="polite" role="tooltip" aria-hidden="true"></div>
 </body>
 </html>
 
