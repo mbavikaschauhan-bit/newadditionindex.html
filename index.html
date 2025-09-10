@@ -819,6 +819,31 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Most Common Mistakes Chart -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="font-semibold" style="color: var(--text-primary);">Most Common Mistakes</h3>
+                                        <span class="text-sm" style="color: var(--text-muted);">Last 1 month</span>
+                                    </div>
+                                    <div class="relative h-64">
+                                        <canvas id="mostCommonMistakesChart"></canvas>
+                                        <div id="mostCommonMistakesMessage" class="hidden absolute inset-0 flex items-center justify-center" style="color: var(--text-muted);">Loading chart...</div>
+                                    </div>
+                                </div>
+                                <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <h3 class="font-semibold" style="color: var(--text-primary);">Mistakes Analysis</h3>
+                                        <span class="text-sm" style="color: var(--text-muted);">Insights</span>
+                                    </div>
+                                    <div class="relative h-64 flex items-center justify-center">
+                                        <div id="mistakesInsights" class="text-center" style="color: var(--text-muted);">
+                                            <p class="text-sm">Select mistakes while adding trades to see analysis here</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -5291,6 +5316,226 @@
                         }
                     });
                     chartInstances['monthlyChargesChart'] = monthlyChargesChart;
+                }
+                
+                // Most Common Mistakes Chart
+                const mostCommonMistakesCtx = getCtx('mostCommonMistakesChart');
+                const mostCommonMistakesMessage = document.getElementById('mostCommonMistakesMessage');
+                if (mostCommonMistakesCtx) {
+                    if (chartInstances['mostCommonMistakesChart']) {
+                        chartInstances['mostCommonMistakesChart'].destroy();
+                    }
+                    
+                    // Show loading message
+                    if (mostCommonMistakesMessage) {
+                        mostCommonMistakesMessage.classList.remove('hidden');
+                    }
+                    
+                    // Calculate mistakes from trades in the last month
+                    const oneMonthAgo = new Date();
+                    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+                    
+                    console.log('All trades in appState:', appState.trades.length);
+                    console.log('One month ago date:', oneMonthAgo);
+                    
+                    // Include ALL trades (both open and closed) from the last month
+                    const recentTrades = appState.trades.filter(trade => {
+                        if (!trade.entry_date) {
+                            console.log('Trade without entry_date:', trade);
+                            return false;
+                        }
+                        const tradeDate = new Date(trade.entry_date);
+                        const isRecent = tradeDate >= oneMonthAgo;
+                        console.log('Trade date:', trade.entry_date, 'isRecent:', isRecent);
+                        return isRecent;
+                    });
+                    
+                    // Count mistakes
+                    const mistakeCounts = {};
+                    console.log('Recent trades for mistakes analysis:', recentTrades.length);
+                    
+                    // If no recent trades, use all trades for debugging
+                    let tradesToAnalyze = recentTrades.length > 0 ? recentTrades : appState.trades;
+                    console.log('Trades to analyze:', tradesToAnalyze.length);
+                    
+                    // For testing: if no trades at all, create some demo data
+                    if (tradesToAnalyze.length === 0) {
+                        console.log('No trades found, creating demo data for testing');
+                        tradesToAnalyze = [
+                            {
+                                id: 'demo1',
+                                entry_date: new Date().toISOString().split('T')[0],
+                                mistakes: ['Exited Too Early', 'FOMO Entry']
+                            },
+                            {
+                                id: 'demo2', 
+                                entry_date: new Date().toISOString().split('T')[0],
+                                mistakes: ['Exited Too Early', 'Ignored Stop Loss']
+                            },
+                            {
+                                id: 'demo3',
+                                entry_date: new Date().toISOString().split('T')[0],
+                                mistakes: ['Overtrading']
+                            }
+                        ];
+                    }
+                    
+                    tradesToAnalyze.forEach(trade => {
+                        console.log('Trade mistakes:', trade.mistakes, 'Trade ID:', trade.id);
+                        if (trade.mistakes && Array.isArray(trade.mistakes)) {
+                            trade.mistakes.forEach(mistake => {
+                                if (mistake !== 'No Mistakes') { // Exclude "No Mistakes" from the chart
+                                    mistakeCounts[mistake] = (mistakeCounts[mistake] || 0) + 1;
+                                }
+                            });
+                        }
+                    });
+                    
+                    console.log('Mistake counts:', mistakeCounts);
+                    
+                    // Sort mistakes by count (descending) and take top 5
+                    const sortedMistakes = Object.entries(mistakeCounts)
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 5);
+                    
+                    if (sortedMistakes.length === 0) {
+                        // Show message if no mistakes data
+                        if (mostCommonMistakesMessage) {
+                            if (appState.trades.length === 0) {
+                                mostCommonMistakesMessage.textContent = 'No trades found. Add some trades first.';
+                            } else if (recentTrades.length === 0) {
+                                mostCommonMistakesMessage.textContent = `No trades found in the last month. Found ${appState.trades.length} total trades.`;
+                            } else {
+                                mostCommonMistakesMessage.textContent = 'No mistakes recorded in recent trades. Select mistakes while adding trades to see analysis.';
+                            }
+                            mostCommonMistakesMessage.classList.remove('hidden');
+                        }
+                        
+                        // Update insights panel for no data case
+                        const insightsPanel = document.getElementById('mistakesInsights');
+                        if (insightsPanel) {
+                            insightsPanel.innerHTML = `
+                                <div class="text-center space-y-3">
+                                    <div class="text-2xl font-bold" style="color: var(--text-primary);">0</div>
+                                    <div class="text-sm" style="color: var(--text-muted);">Total Mistakes</div>
+                                    <div class="text-xs mt-4" style="color: var(--text-muted);">Found ${appState.trades.length} total trades</div>
+                                    <div class="text-xs" style="color: var(--text-muted);">Select mistakes while adding trades to see analysis</div>
+                                </div>
+                            `;
+                        }
+                        return;
+                    }
+                    
+                    const labels = sortedMistakes.map(([mistake]) => mistake);
+                    const data = sortedMistakes.map(([, count]) => count);
+                    
+                    // Hide loading message
+                    if (mostCommonMistakesMessage) {
+                        mostCommonMistakesMessage.classList.add('hidden');
+                    }
+                    
+                    const mostCommonMistakesChart = new Chart(mostCommonMistakesCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Number of Trades',
+                                data: data,
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)', // Red color matching the image
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                borderSkipped: false,
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y', // Horizontal bar chart
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#ffffff',
+                                    bodyColor: '#ffffff',
+                                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                                    borderWidth: 1,
+                                    callbacks: {
+                                        title: function(context) {
+                                            return context[0].label;
+                                        },
+                                        label: function(context) {
+                                            return `${context.parsed.x} trades`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1,
+                                        color: 'var(--chart-text)',
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.1)',
+                                        drawBorder: false
+                                    }
+                                },
+                                y: {
+                                    ticks: {
+                                        color: 'var(--chart-text)',
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            animation: {
+                                duration: 1000,
+                                easing: 'easeInOutQuart'
+                            }
+                        }
+                    });
+                    
+                    chartInstances['mostCommonMistakesChart'] = mostCommonMistakesChart;
+                    
+                    // Update insights panel
+                    const insightsPanel = document.getElementById('mistakesInsights');
+                    if (insightsPanel) {
+                        const totalMistakes = Object.values(mistakeCounts).reduce((sum, count) => sum + count, 0);
+                        const uniqueMistakes = Object.keys(mistakeCounts).length;
+                        const totalTrades = tradesToAnalyze.length;
+                        const tradesWithMistakes = tradesToAnalyze.filter(trade => 
+                            trade.mistakes && Array.isArray(trade.mistakes) && 
+                            trade.mistakes.length > 0 && !trade.mistakes.includes('No Mistakes')
+                        ).length;
+                        
+                        insightsPanel.innerHTML = `
+                            <div class="space-y-3">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold" style="color: var(--text-primary);">${totalMistakes}</div>
+                                    <div class="text-sm" style="color: var(--text-muted);">Total Mistakes</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-lg font-semibold" style="color: var(--text-primary);">${uniqueMistakes}</div>
+                                    <div class="text-sm" style="color: var(--text-muted);">Unique Mistake Types</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-lg font-semibold" style="color: var(--text-primary);">${tradesWithMistakes}/${totalTrades}</div>
+                                    <div class="text-sm" style="color: var(--text-muted);">Trades with Mistakes</div>
+                                </div>
+                            </div>
+                        `;
+                    }
                 }
                 
                 // Challenge Progress Chart is handled by updateChallengeProgress function
