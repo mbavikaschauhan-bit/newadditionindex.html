@@ -703,18 +703,14 @@
                             <p class="text-xs" style="color: var(--text-muted);">Returns are shown once deposits are made.</p>
                         </div>
                         
-
-                        <!-- Most Common Mistakes Section -->
+                        <!-- Achievements Section -->
                         <div class="rounded-lg shadow-sm p-6 mb-8" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
-                            <h3 class="text-xl font-bold mb-2" style="color: var(--text-primary);">Most Common Mistakes</h3>
-                            <p class="text-sm mb-6" style="color: var(--text-secondary);">Last 1 month</p>
-                            <div class="relative h-64">
-                                <canvas id="mostCommonMistakesChart"></canvas>
-                                <div id="mostCommonMistakesMessage" class="hidden absolute inset-0 flex items-center justify-center" style="color: var(--text-muted);">No mistake data available</div>
+                            <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">🏆 Achievements</h3>
+                            <div class="achievements-container grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 text-center">
+                                <!-- Badges will be injected here -->
                             </div>
                         </div>
 
-                        <!-- Mood Distribution Section - Temporarily disabled -->
 
                         <!-- Charts -->
                         <div class="space-y-8">
@@ -959,77 +955,77 @@
                                          <label for="reasons" class="block text-sm font-medium" style="color: var(--text-secondary);">Reasons for Entry/Exit, Learnings, etc.</label>
                                          <textarea name="reasons" id="reasons" rows="5" class="mt-1 w-full rounded-md border focus:border-blue-500 focus:ring-blue-500" style="background-color: var(--bg-primary); color: var(--text-primary); border-color: var(--border-color);" placeholder="What was your thesis for this trade? What did you learn?"></textarea>
                                     </div>
-                                        
-                                        <!-- Psychology Section -->
-                                        <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
-                                            <h3 class="text-xl font-semibold mb-6 border-b pb-4" style="color: var(--text-primary); border-color: var(--border-color);">Psychology</h3>
-                                            <div class="space-y-6">
-                                                <!-- Emotional State During Trade -->
-                                                <div>
-                                                    <label for="emotional-state" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Emotional State During Trade</label>
-                                                    <select name="emotionalState" id="emotional-state" class="w-full rounded-md border focus:border-blue-500 focus:ring-blue-500" style="background-color: var(--bg-primary); color: var(--text-primary); border-color: var(--border-color);">
-                                                        <option value="">Select Emotional State</option>
-                                                        <option value="Calm">Calm</option>
-                                                        <option value="Frustrated">Frustrated</option>
-                                                        <option value="Overconfident">Overconfident</option>
-                                                        <option value="Anxious">Anxious</option>
-                                                        <option value="Impatient">Impatient</option>
-                                                        <option value="Confident">Confident</option>
-                                                        <option value="Fearful">Fearful</option>
-                                                        <option value="Greedy">Greedy</option>
-                                                        <option value="Excited">Excited</option>
-                                                        <option value="Neutral">Neutral</option>
-                                                    </select>
-                                                </div>
-                                                
-                                                <!-- Mistakes Made -->
-                                                <div>
-                                                    <label class="block text-sm font-medium mb-3" style="color: var(--text-secondary);">Mistakes Made</label>
-                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="Overtrading" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">Overtrading</span>
-                                                        </label>
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="Risked Too Much" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">Risked Too Much</span>
-                                                        </label>
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="Exited Too Late" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">Exited Too Late</span>
-                                                        </label>
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="Ignored Signals" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">Ignored Signals</span>
-                                                        </label>
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="Ignored Stop Loss" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">Ignored Stop Loss</span>
-                                                        </label>
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="Revenge Trading" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">Revenge Trading</span>
-                                                        </label>
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="Exited Too Early" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">Exited Too Early</span>
-                                                        </label>
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="FOMO Entry" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">FOMO Entry</span>
-                                                        </label>
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="No Clear Plan" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">No Clear Plan</span>
-                                                        </label>
-                                                        <label class="flex items-center space-x-2 cursor-pointer">
-                                                            <input type="checkbox" name="mistakes" value="No Mistakes" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
-                                                            <span class="text-sm" style="color: var(--text-primary);">No Mistakes</span>
-                                                        </label>
-                                                    </div>
+                                    
+                                    <!-- Psychology Section -->
+                                    <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                         <h3 class="text-xl font-semibold mb-6 border-b pb-4" style="color: var(--text-primary); border-color: var(--border-color);">Psychology</h3>
+                                         <div class="space-y-6">
+                                            <!-- Emotional State During Trade -->
+                                            <div>
+                                                <label for="emotional-state" class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">Emotional State During Trade</label>
+                                                <select name="emotionalState" id="emotional-state" class="w-full rounded-md border focus:border-blue-500 focus:ring-blue-500" style="background-color: var(--bg-primary); color: var(--text-primary); border-color: var(--border-color);">
+                                                    <option value="">Select Emotional State</option>
+                                                    <option value="Calm">Calm</option>
+                                                    <option value="Frustrated">Frustrated</option>
+                                                    <option value="Overconfident">Overconfident</option>
+                                                    <option value="Anxious">Anxious</option>
+                                                    <option value="Impatient">Impatient</option>
+                                                    <option value="Confident">Confident</option>
+                                                    <option value="Fearful">Fearful</option>
+                                                    <option value="Greedy">Greedy</option>
+                                                    <option value="Excited">Excited</option>
+                                                    <option value="Neutral">Neutral</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <!-- Mistakes Made -->
+                                            <div>
+                                                <label class="block text-sm font-medium mb-3" style="color: var(--text-secondary);">Mistakes Made</label>
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="Overtrading" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">Overtrading</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="Risked Too Much" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">Risked Too Much</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="Exited Too Late" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">Exited Too Late</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="Ignored Signals" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">Ignored Signals</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="Ignored Stop Loss" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">Ignored Stop Loss</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="Revenge Trading" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">Revenge Trading</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="Exited Too Early" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">Exited Too Early</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="FOMO Entry" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">FOMO Entry</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="No Clear Plan" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">No Clear Plan</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="checkbox" name="mistakes" value="No Mistakes" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                                        <span class="text-sm" style="color: var(--text-primary);">No Mistakes</span>
+                                                    </label>
                                                 </div>
                                             </div>
-                                        </div>
+                                         </div>
+                                    </div>
                                 </div>
                             </div>
                             <!-- Action Buttons -->
@@ -1399,16 +1395,6 @@
                                 <button id="set-challenge-btn-inactive" class="btn-primary font-semibold py-2 px-6 rounded-md shadow-sm">Start a New Challenge</button>
                             </div>
                         </div>
-
-                            <!-- Achievements Section -->
-                            <div class="mt-12 mb-8">
-                                <div class="rounded-lg shadow-sm p-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
-                                    <h3 class="text-xl font-bold mb-4" style="color: var(--text-primary);">🏆 Achievements</h3>
-                                    <div class="achievements-container grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 text-center">
-                                        <!-- Badges will be injected here -->
-                                    </div>
-                                </div>
-                            </div>
 
                         <div class="mt-12">
                             <h3 class="text-2xl font-bold mb-6" style="color: var(--text-primary);">Challenge History</h3>
@@ -1890,45 +1876,44 @@
         // Get theme-aware colors for charts
         const getThemeColors = () => {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                const chartTextColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-text').trim();
+            const chartTextColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-text').trim();
             return {
                 textPrimary: isDark ? '#ffffff' : '#212529',
                 textSecondary: isDark ? '#d1d5db' : '#2c333a',
                 textMuted: isDark ? '#d1d5db' : '#3e444a',
                 gridColor: 'rgba(128, 128, 128, 0.1)',
-                    chartText: chartTextColor || (isDark ? '#ffffff' : '#212529'),
-                    // Ensure we always have a valid text color
-                    textColor: isDark ? '#ffffff' : '#212529'
-                };
+                chartText: chartTextColor || (isDark ? '#ffffff' : '#212529'),
+                // Ensure we always have a valid text color
+                textColor: isDark ? '#ffffff' : '#212529'
             };
+        };
 
-            // Get continuous tooltip configuration for all charts
-            const getContinuousTooltipConfig = (themeColors, customCallbacks = {}) => {
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                return {
-                    enabled: true,
-                    mode: 'index',
-                    intersect: false,
-                    position: 'nearest',
-                    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)',
-                    titleColor: themeColors.chartText || themeColors.textColor,
-                    bodyColor: themeColors.chartText || themeColors.textColor,
-                    borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                    borderWidth: 1,
-                    cornerRadius: 6,
-                    displayColors: true,
-                    padding: 12,
-                    titleFont: {
-                        size: 13,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 12
-                    },
-                    animation: {
-                        duration: 0
-                    },
-                    ...customCallbacks
+        // Get continuous tooltip configuration for all charts
+        const getContinuousTooltipConfig = (themeColors, customCallbacks = {}) => {
+            return {
+                enabled: true,
+                mode: 'index',
+                intersect: false,
+                position: 'nearest',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: themeColors.chartText || themeColors.textColor,
+                bodyColor: themeColors.chartText || themeColors.textColor,
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderWidth: 1,
+                cornerRadius: 6,
+                displayColors: true,
+                padding: 12,
+                titleFont: {
+                    size: 13,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 12
+                },
+                animation: {
+                    duration: 0
+                },
+                ...customCallbacks
             };
         };
 
@@ -1944,35 +1929,31 @@
                         if (chart.options && chart.options.scales) {
                             // Update axis text colors
                             if (chart.options.scales.x && chart.options.scales.x.ticks) {
-                                    chart.options.scales.x.ticks.color = colors.chartText || colors.textColor;
+                                chart.options.scales.x.ticks.color = colors.chartText || colors.textColor;
                             }
                             if (chart.options.scales.y && chart.options.scales.y.ticks) {
-                                    chart.options.scales.y.ticks.color = colors.chartText || colors.textColor;
+                                chart.options.scales.y.ticks.color = colors.chartText || colors.textColor;
                             }
                         }
                         
                         // Update legend colors
                         if (chart.options && chart.options.plugins && chart.options.plugins.legend) {
                             if (chart.options.plugins.legend.labels) {
-                                    chart.options.plugins.legend.labels.color = colors.chartText || colors.textColor;
+                                chart.options.plugins.legend.labels.color = colors.chartText || colors.textColor;
                             }
                         }
                         
-                            // Update tooltip colors and continuous mode
+                        // Update tooltip colors and continuous mode
                         if (chart.options && chart.options.plugins && chart.options.plugins.tooltip) {
                             if (chart.options.plugins.tooltip.titleColor) {
-                                    chart.options.plugins.tooltip.titleColor = colors.chartText || colors.textColor;
+                                chart.options.plugins.tooltip.titleColor = colors.chartText || colors.textColor;
                             }
                             if (chart.options.plugins.tooltip.bodyColor) {
-                                    chart.options.plugins.tooltip.bodyColor = colors.chartText || colors.textColor;
-                                }
-                                // Update tooltip background and border colors for theme
-                                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                                chart.options.plugins.tooltip.backgroundColor = isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.95)';
-                                chart.options.plugins.tooltip.borderColor = isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)';
-                                // Ensure continuous tooltip mode is enabled
-                                chart.options.plugins.tooltip.mode = 'index';
-                                chart.options.plugins.tooltip.intersect = false;
+                                chart.options.plugins.tooltip.bodyColor = colors.chartText || colors.textColor;
+                            }
+                            // Ensure continuous tooltip mode is enabled
+                            chart.options.plugins.tooltip.mode = 'index';
+                            chart.options.plugins.tooltip.intersect = false;
                         }
                         
                         // Update grid colors
@@ -1994,12 +1975,12 @@
             });
         };
 
-            // Format amount in compact format
+        // Format amount in compact format
         const formatAmount = (value) => {
-                const abs = Math.abs(value);
-                if (abs >= 1_000_000) return `₹${(value/1_000_000).toFixed(1)}M`;
-                if (abs >= 1_000) return `₹${(value/1_000).toFixed(1)}K`;
-                return `₹${Math.round(value)}`;
+            const abs = Math.abs(value);
+            if (abs >= 1_000_000) return `₹${(value/1_000_000).toFixed(1)}M`;
+            if (abs >= 1_000) return `₹${(value/1_000).toFixed(1)}K`;
+            return `₹${Math.round(value)}`;
         };
 
         const formatDate = (dateString, includeTime = false) => {
@@ -2356,7 +2337,6 @@
             if (pageId === 'challenge') {
                 renderChallenge();
                 renderChallengeHistory();
-                    renderAchievements();
             }
         };
         navItems.forEach(item => {
@@ -2601,28 +2581,28 @@
                         document.getElementById('strategy').value = trade.strategy || 'Price Action';
                         document.getElementById('outcome-summary').value = trade.outcomeSummary || 'Select Outcome Summary';
                         document.getElementById('reasons').value = trade.reasons || '';
-                            
-                            // Populate Psychology fields
-                            const emotionalStateSelect = document.getElementById('emotional-state');
-                            if (emotionalStateSelect) {
-                                emotionalStateSelect.value = trade.emotionalState || '';
-                            }
-                            
-                            // Clear all mistake checkboxes first
-                            document.querySelectorAll('input[name="mistakes"]').forEach(checkbox => {
-                                checkbox.checked = false;
+                        
+                        // Populate Psychology fields
+                        const emotionalStateSelect = document.getElementById('emotional-state');
+                        if (emotionalStateSelect) {
+                            emotionalStateSelect.value = trade.emotionalState || '';
+                        }
+                        
+                        // Clear all mistake checkboxes first
+                        document.querySelectorAll('input[name="mistakes"]').forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
+                        
+                        // Check the mistakes that were previously selected
+                        if (trade.mistakes && Array.isArray(trade.mistakes)) {
+                            trade.mistakes.forEach(mistake => {
+                                const checkbox = document.querySelector(`input[name="mistakes"][value="${mistake}"]`);
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                }
                             });
-                            
-                            // Check the mistakes that were previously selected
-                            if (trade.mistakes && Array.isArray(trade.mistakes)) {
-                                trade.mistakes.forEach(mistake => {
-                                    const checkbox = document.querySelector(`input[name="mistakes"][value="${mistake}"]`);
-                                    if (checkbox) {
-                                        checkbox.checked = true;
-                                    }
-                                });
-                            }
-                            
+                        }
+                        
                         updateCalculations();
                         navigateTo('add-trade');
                     });
@@ -3286,9 +3266,9 @@
                                     legend: { 
                                         display: false 
                                     },
-                                        tooltip: getContinuousTooltipConfig(themeColors, {
-                                            borderColor: 'rgba(255, 255, 255, 0.2)'
-                                        })
+                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                        borderColor: 'rgba(255, 255, 255, 0.2)'
+                                    })
                                 }
                             }
                         });
@@ -3476,9 +3456,9 @@
                 }
                 console.log('Chart.js is loaded, proceeding with chart rendering');
 
-                    // Get theme colors once for all charts
-                    const themeColors = getThemeColors();
-                    console.log('Theme colors for charts:', themeColors);
+                // Get theme colors once for all charts
+                const themeColors = getThemeColors();
+                console.log('Theme colors for charts:', themeColors);
 
                 const trades = Array.isArray(appState.trades) ? appState.trades : [];
                 const ledger = Array.isArray(appState.ledger) ? appState.ledger : [];
@@ -3579,7 +3559,7 @@
                                         color: 'rgba(128, 128, 128, 0.1)'
                                     },
                                     ticks: {
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor
                                     }
                                 },
                                 x: {
@@ -3587,7 +3567,7 @@
                                         color: 'rgba(128, 128, 128, 0.1)'
                                     },
                                     ticks: {
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor
                                     }
                                 }
                             }
@@ -3643,14 +3623,14 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.y;
                                             return `P&L: ₹${value.toLocaleString()}`;
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 y: {
@@ -3660,7 +3640,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: { size: 11 }
                                     }
                                 },
@@ -3669,7 +3649,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: { size: 11 }
                                     }
                                 }
@@ -3824,7 +3804,7 @@
                                 },
                             plugins: {
                                 legend: { display: false },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     borderColor: 'rgba(59, 130, 246, 1)',
                                     callbacks: {
                                         title: function(context) {
@@ -3834,7 +3814,7 @@
                                             return `Total Equity: ₹${context.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                                         }
                                     }
-                                    }),
+                                }),
                             },
                                 scales: {
                                 y: {
@@ -3847,7 +3827,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0});
                                         },
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         },
@@ -3860,7 +3840,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         },
@@ -3881,7 +3861,7 @@
                     if (chartInstances['accountBalanceChart']) {
                         chartInstances['accountBalanceChart'].destroy();
                     }
-                        
+                    
                     
                     // Get first deposit to determine starting point
                     const firstDeposit = ledger.find(l => l.type === 'Deposit');
@@ -3974,7 +3954,7 @@
                                 legend: {
                                     display: false
                                 },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     borderColor: 'rgba(20, 184, 166, 1)',
                                     callbacks: {
                                         title: function(context) {
@@ -3984,7 +3964,7 @@
                                             return `Account Value: ₹${context.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 y: {
@@ -3997,7 +3977,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                                         },
-                                            color: themeColors.chartText || themeColors.textColor,
+                                        color: themeColors.chartText || themeColors.textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4009,7 +3989,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         },
@@ -4090,7 +4070,7 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         title: function(context) {
                                             return `Month: ${context[0].label}`;
@@ -4104,7 +4084,7 @@
                                             ];
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 y: {
@@ -4117,7 +4097,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                                         },
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: { size: 11 }
                                     }
                                 },
@@ -4129,7 +4109,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: { size: 11 }
                                     }
                                 }
@@ -4209,7 +4189,7 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.y;
@@ -4224,7 +4204,7 @@
                                             return '';
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 y: {
@@ -4237,7 +4217,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4251,7 +4231,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4330,7 +4310,7 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.y;
@@ -4345,7 +4325,7 @@
                                             return '';
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 y: {
@@ -4358,7 +4338,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4372,7 +4352,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4420,7 +4400,7 @@
                                         labels: {
                                             usePointStyle: true,
                                             padding: 20,
-                                                color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                             font: {
                                                 size: 12
                                             }
@@ -4457,13 +4437,13 @@
                                         labels: {
                                             usePointStyle: true,
                                             padding: 20,
-                                                color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                             font: {
                                                 size: 12
                                             }
                                         }
                                     },
-                                        tooltip: getContinuousTooltipConfig(themeColors, {
+                                    tooltip: getContinuousTooltipConfig(themeColors, {
                                         callbacks: {
                                             label: function(context) {
                                                 const label = context.label || '';
@@ -4473,7 +4453,7 @@
                                                 return `${label}: ${value} trades (${percentage}%)`;
                                             }
                                         }
-                                        })
+                                    })
                                 }
                             }
                         });
@@ -4551,14 +4531,14 @@
                             aspectRatio: 1.5,
                             plugins: {
                                 legend: { display: false },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
-                                                const value = context.parsed.y; // For regular bar chart, y is the value
+                                            const value = context.parsed.x;
                                             return `P&L: ₹${value.toLocaleString()}`;
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 x: {
@@ -4571,7 +4551,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4583,7 +4563,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4656,15 +4636,15 @@
                             aspectRatio: 1.5,
                             plugins: {
                                 legend: { display: false },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     borderColor: 'rgba(249, 115, 22, 1)',
                                     callbacks: {
                                         label: function(context) {
-                                                const value = context.parsed.x; // For horizontal bar chart, x is the value
+                                            const value = context.parsed.x;
                                             return `${value} trades`;
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 x: {
@@ -4674,7 +4654,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         },
@@ -4687,7 +4667,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4698,133 +4678,29 @@
                     });
                     chartInstances['tradeDistributionChart'] = tradeDistributionChart;
                 }
-                    // Daily Win Rate Chart - FIXED VERSION
+                // Daily Win Rate Chart with comprehensive P&L analysis
                 const dailyWinRateCtx = getCtx('dailyWinRateChart');
                 const dailyWinRateMessage = document.getElementById('dailyWinRateMessage');
-                    if (dailyWinRateCtx && typeof Chart !== 'undefined') {
+                if (dailyWinRateCtx && typeof Chart !== 'undefined') {
                     if (chartInstances['dailyWinRateChart']) {
                         chartInstances['dailyWinRateChart'].destroy();
                     }
                     
-                        // Hide loading message immediately
+                    // Show loading message
                     if (dailyWinRateMessage) {
-                            dailyWinRateMessage.classList.add('hidden');
-                        }
-                        
-                        console.log('Creating Daily Win Rate Chart - FIXED VERSION');
-                        
-                        // Simple data that will always work
-                        const chartLabels = ['01-01-2024', '02-01-2024', '03-01-2024', '04-01-2024', '05-01-2024'];
-                        const dailyWinRateData = [0, 50, 66.67, 75, 100];
-                        const tooltipData = [
-                            { date: '01-01-2024', dailyWins: 0, dailyLosses: 0, dailyBreakeven: 0, totalTrades: 0, dailyRatePct: 0, avgWinSize: 0, avgLossSize: 0, netPnl: 0 },
-                            { date: '02-01-2024', dailyWins: 1, dailyLosses: 1, dailyBreakeven: 0, totalTrades: 2, dailyRatePct: 50, avgWinSize: 1900, avgLossSize: -1100, netPnl: 800 },
-                            { date: '03-01-2024', dailyWins: 2, dailyLosses: 1, dailyBreakeven: 0, totalTrades: 3, dailyRatePct: 66.67, avgWinSize: 2200, avgLossSize: -1800, netPnl: 2600 },
-                            { date: '04-01-2024', dailyWins: 3, dailyLosses: 1, dailyBreakeven: 0, totalTrades: 4, dailyRatePct: 75, avgWinSize: 1950, avgLossSize: -1400, netPnl: 4450 },
-                            { date: '05-01-2024', dailyWins: 1, dailyLosses: 0, dailyBreakeven: 0, totalTrades: 1, dailyRatePct: 100, avgWinSize: 3100, avgLossSize: 0, netPnl: 3100 }
-                        ];
-                        
-                        // Create the chart immediately
-                        const dailyWinRateChart = new Chart(dailyWinRateCtx, {
-                            type: 'line',
-                            data: {
-                                labels: chartLabels,
-                                datasets: [{
-                                    label: 'Daily Win Rate',
-                                    data: dailyWinRateData,
-                                    borderColor: 'rgba(59, 130, 246, 1)',
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    borderWidth: 2,
-                                    fill: false,
-                                    tension: 0.4,
-                                    pointRadius: 4,
-                                    pointHoverRadius: 6
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                aspectRatio: 2,
-                                plugins: {
-                                    legend: {
-                                        display: true,
-                                        position: 'top',
-                                        labels: {
-                                            usePointStyle: true,
-                                            padding: 20,
-                                            color: themeColors.chartText || '#212529',
-                                            font: {
-                                                size: 12
-                                            }
-                                        }
-                                    },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
-                                        callbacks: {
-                                            title: function(context) {
-                                                const index = context[0].dataIndex;
-                                                const data = tooltipData[index];
-                                                return `Date: ${data.date}`;
-                                            },
-                                            label: function(context) {
-                                                const index = context.dataIndex;
-                                                const data = tooltipData[index];
-                                                const lines = [
-                                                    `Win Rate: ${data.dailyRatePct.toFixed(2)}%`,
-                                                    `Wins/Losses: ${data.dailyWins}/${data.dailyLosses}`,
-                                                    `Breakeven: ${data.dailyBreakeven}`,
-                                                    `Total Trades: ${data.totalTrades}`,
-                                                    `Avg Win: ₹${data.avgWinSize.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`,
-                                                    `Avg Loss: ₹${data.avgLossSize.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`,
-                                                    `Net P&L: ₹${data.netPnl.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`
-                                                ];
-                                                return lines;
-                                            }
-                                        }
-                                    }),
-                                },
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        max: 100,
-                                        ticks: {
-                                            callback: function(value) {
-                                                return value + '%';
-                                            },
-                                            color: themeColors.chartText || '#212529',
-                                            font: {
-                                                size: 11
-                                            }
-                                        },
-                                        grid: { 
-                                            color: 'rgba(128, 128, 128, 0.1)',
-                                            drawBorder: false
-                                        }
-                                    },
-                                    x: {
-                                        grid: { 
-                                            color: 'rgba(128, 128, 128, 0.1)',
-                                            drawBorder: false
-                                        },
-                                        ticks: {
-                                            color: themeColors.chartText || '#212529',
-                                            font: {
-                                                size: 11
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                        
-                        chartInstances['dailyWinRateChart'] = dailyWinRateChart;
-                        console.log('Daily Win Rate Chart created successfully - FIXED VERSION');
-                    } else {
-                        if (!dailyWinRateCtx) {
-                            console.log('Daily Win Rate Chart canvas not found - canvas element missing');
-                        } else if (typeof Chart === 'undefined') {
-                            console.log('Chart.js not loaded');
-                        }
+                        dailyWinRateMessage.classList.remove('hidden');
+                        dailyWinRateMessage.textContent = 'Loading chart...';
                     }
+                    
+                    // Set a timeout to hide loading message if chart creation takes too long
+                    const loadingTimeout = setTimeout(() => {
+                        if (dailyWinRateMessage && !dailyWinRateMessage.classList.contains('hidden')) {
+                            console.warn('Daily Win Rate Chart: Loading timeout, showing error message');
+                            dailyWinRateMessage.textContent = 'Chart loading timeout - please refresh the page';
+                        }
+                    }, 10000); // 10 second timeout
+                    
+                    console.log('Creating Daily Win Rate Chart with closedTrades:', closedTrades.length);
                     
                     // Function to calculate daily win rate statistics
                     function calculateDailyWinRateStats(trades, date) {
@@ -4977,41 +4853,43 @@
                     // Ensure we have data to display
                     if (chartLabels.length === 0 || dailyWinRateData.length === 0) {
                         console.error('Daily Win Rate Chart: No data to display');
+                        clearTimeout(loadingTimeout);
                         if (dailyWinRateMessage) {
                             dailyWinRateMessage.textContent = 'No data available';
                             dailyWinRateMessage.classList.remove('hidden');
                         }
                         return;
                     }
-                        
-                        // Validate data arrays
-                        if (!Array.isArray(chartLabels) || !Array.isArray(dailyWinRateData)) {
-                            console.error('Daily Win Rate Chart: Invalid data format', {
-                                chartLabels: typeof chartLabels,
-                                dailyWinRateData: typeof dailyWinRateData
-                            });
-                            if (dailyWinRateMessage) {
-                                dailyWinRateMessage.textContent = 'Invalid data format';
-                                dailyWinRateMessage.classList.remove('hidden');
-                            }
-                            return;
+                    
+                    // Validate data arrays
+                    if (!Array.isArray(chartLabels) || !Array.isArray(dailyWinRateData)) {
+                        console.error('Daily Win Rate Chart: Invalid data format', {
+                            chartLabels: typeof chartLabels,
+                            dailyWinRateData: typeof dailyWinRateData
+                        });
+                        clearTimeout(loadingTimeout);
+                        if (dailyWinRateMessage) {
+                            dailyWinRateMessage.textContent = 'Invalid data format';
+                            dailyWinRateMessage.classList.remove('hidden');
                         }
+                        return;
+                    }
+                    
+                    // Ensure tooltipData is properly aligned with chart data
+                    if (tooltipData.length !== chartLabels.length) {
+                        console.warn('Daily Win Rate Chart: tooltipData length mismatch, adjusting...');
+                        tooltipData = tooltipData.slice(0, chartLabels.length);
+                    }
+                    
+                    try {
+                        console.log('Creating Daily Win Rate Chart with config:', {
+                            labels: chartLabels.length,
+                            data: dailyWinRateData.length,
+                            tooltipData: tooltipData.length,
+                            ctx: !!dailyWinRateCtx
+                        });
                         
-                        // Ensure tooltipData is properly aligned with chart data
-                        if (tooltipData.length !== chartLabels.length) {
-                            console.warn('Daily Win Rate Chart: tooltipData length mismatch, adjusting...');
-                            tooltipData = tooltipData.slice(0, chartLabels.length);
-                        }
                         
-                        try {
-                            console.log('Creating Daily Win Rate Chart with config:', {
-                                labels: chartLabels.length,
-                                data: dailyWinRateData.length,
-                                tooltipData: tooltipData.length,
-                                ctx: !!dailyWinRateCtx
-                            });
-                            
-                            
                         const dailyWinRateChart = new Chart(dailyWinRateCtx, {
                         type: 'line',
                         data: {
@@ -5041,13 +4919,13 @@
                                     labels: {
                                         usePointStyle: true,
                                         padding: 20,
-                                            color: themeColors.chartText || '#212529',
+                                        color: themeColors.chartText || '#212529',
                                         font: {
                                             size: 12
                                         }
                                     }
                                 },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         title: function(context) {
                                             const index = context[0].dataIndex;
@@ -5069,7 +4947,7 @@
                                             return lines;
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 y: {
@@ -5079,7 +4957,7 @@
                                         callback: function(value) {
                                             return value + '%';
                                         },
-                                            color: themeColors.chartText || '#212529',
+                                        color: themeColors.chartText || '#212529',
                                         font: {
                                             size: 11
                                         }
@@ -5090,7 +4968,7 @@
                                 },
                                 x: {
                                     ticks: {
-                                            color: themeColors.chartText || '#212529',
+                                        color: themeColors.chartText || '#212529',
                                         font: {
                                             size: 11
                                         },
@@ -5120,9 +4998,43 @@
                         chartInstances['dailyWinRateChart'] = dailyWinRateChart;
                         console.log('Daily Win Rate Chart created successfully:', dailyWinRateChart);
                         
+                        // Clear the loading timeout
+                        clearTimeout(loadingTimeout);
+                        
                         // Hide loading message on success
                         if (dailyWinRateMessage) {
                             dailyWinRateMessage.classList.add('hidden');
+                        }
+                    } catch (error) {
+                        console.error('Error creating Daily Win Rate Chart:', error);
+                        console.error('Error details:', {
+                            message: error.message,
+                            stack: error.stack,
+                            chartLabels: chartLabels,
+                            dailyWinRateData: dailyWinRateData,
+                            tooltipData: tooltipData,
+                            themeColors: themeColors
+                        });
+                        
+                        // Clear the loading timeout
+                        clearTimeout(loadingTimeout);
+                        
+                        // Show error message
+                        if (dailyWinRateMessage) {
+                            dailyWinRateMessage.textContent = `Error loading chart: ${error.message}`;
+                            dailyWinRateMessage.classList.remove('hidden');
+                        }
+                    }
+                } else {
+                    if (!dailyWinRateCtx) {
+                        console.log('Daily Win Rate Chart canvas not found - canvas element missing');
+                    } else if (typeof Chart === 'undefined') {
+                        console.error('Chart.js not loaded - cannot create Daily Win Rate Chart');
+                        if (dailyWinRateMessage) {
+                            dailyWinRateMessage.textContent = 'Chart library not loaded';
+                            dailyWinRateMessage.classList.remove('hidden');
+                        }
+                    }
                 }
                 
                 // Strategy vs P&L Chart
@@ -5175,7 +5087,7 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     borderColor: 'rgba(147, 51, 234, 1)',
                                     callbacks: {
                                         label: function(context) {
@@ -5191,7 +5103,7 @@
                                             return '';
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 y: {
@@ -5204,7 +5116,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -5218,7 +5130,7 @@
                                     ticks: {
                                         maxRotation: 0,
                                         minRotation: 0,
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -5316,13 +5228,13 @@
                                     display: true,
                                     position: 'top',
                                     labels: {
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 12
                                         }
                                     }
                                 },
-                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.y;
@@ -5340,7 +5252,7 @@
                                             return '';
                                         }
                                     }
-                                    }),
+                                }),
                             },
                             scales: {
                                 y: {
@@ -5354,7 +5266,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -5369,7 +5281,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -5380,211 +5292,6 @@
                     });
                     chartInstances['monthlyChargesChart'] = monthlyChargesChart;
                 }
-                
-                    // Most Common Mistakes Chart
-                    const mistakesCtx = getCtx('mostCommonMistakesChart');
-                    const mistakesMessage = document.getElementById('mostCommonMistakesMessage');
-                    if (mistakesCtx) {
-                        if (chartInstances['mostCommonMistakesChart']) {
-                            chartInstances['mostCommonMistakesChart'].destroy();
-                        }
-                        
-                        // Get trades from the last 1 month
-                        const oneMonthAgo = new Date();
-                        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-                        
-                        const recentTrades = closedTrades.filter(trade => {
-                            const tradeDate = new Date(trade.exit_date || trade.entry_date);
-                            return tradeDate >= oneMonthAgo;
-                        });
-                        
-                        // Count mistakes from recent trades
-                        const mistakeCounts = {};
-                        recentTrades.forEach(trade => {
-                            if (trade.mistakes && Array.isArray(trade.mistakes)) {
-                                trade.mistakes.forEach(mistake => {
-                                    mistakeCounts[mistake] = (mistakeCounts[mistake] || 0) + 1;
-                                });
-                            }
-                        });
-                        
-                        // Sort mistakes by count (most common first)
-                        const sortedMistakes = Object.entries(mistakeCounts)
-                            .sort(([,a], [,b]) => b - a)
-                            .slice(0, 4); // Show top 4 mistakes
-                        
-                        if (sortedMistakes.length === 0) {
-                            // Show sample data if no mistakes recorded
-                            const sampleMistakes = [
-                                ['Exited Too Early', 5],
-                                ['FOMO Entry', 3],
-                                ['Ignored Stop Loss', 2],
-                                ['Overtrading', 1]
-                            ];
-                            
-                            const labels = sampleMistakes.map(([mistake]) => mistake);
-                            const data = sampleMistakes.map(([, count]) => count);
-                            
-                            const mistakesChart = new Chart(mistakesCtx, {
-                                type: 'bar',
-                        data: {
-                                    labels: labels,
-                            datasets: [{
-                                        label: 'Number of Trades',
-                                        data: data,
-                                        backgroundColor: [
-                                            'rgba(239, 68, 68, 0.8)',
-                                            'rgba(245, 158, 11, 0.8)',
-                                            'rgba(249, 115, 22, 0.8)',
-                                            'rgba(220, 38, 127, 0.8)'
-                                        ],
-                                        borderColor: [
-                                            'rgba(239, 68, 68, 1)',
-                                            'rgba(245, 158, 11, 1)',
-                                            'rgba(249, 115, 22, 1)',
-                                            'rgba(220, 38, 127, 1)'
-                                        ],
-                                        borderWidth: 1
-                            }]
-                        },
-                        options: {
-                                    indexAxis: 'y', // Horizontal bar chart
-                            responsive: true,
-                            maintainAspectRatio: false,
-                                    aspectRatio: 1.5,
-                            plugins: {
-                                legend: { display: false },
-                                        tooltip: getContinuousTooltipConfig(themeColors, {
-                                    callbacks: {
-                                        label: function(context) {
-                                                    const value = context.parsed.x;
-                                                    return `${value} trades`;
-                                        }
-                                    }
-                                        }),
-                            },
-                            scales: {
-                                        x: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                                stepSize: 1,
-                                                color: themeColors.chartText || themeColors.textColor,
-                                                font: {
-                                                    size: 11
-                                                }
-                                            },
-                                            grid: { 
-                                                color: 'rgba(128, 128, 128, 0.1)',
-                                                drawBorder: false
-                                            }
-                                        },
-                                        y: {
-                                            ticks: {
-                                                color: themeColors.chartText || themeColors.textColor,
-                                                font: {
-                                                    size: 11
-                                                }
-                                            },
-                                            grid: { 
-                                                color: 'rgba(128, 128, 128, 0.1)',
-                                                drawBorder: false
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                            
-                            chartInstances['mostCommonMistakesChart'] = mistakesChart;
-                            if (mistakesMessage) {
-                                mistakesMessage.classList.add('hidden');
-                            }
-                        } else {
-                            // Show actual mistake data
-                            const labels = sortedMistakes.map(([mistake]) => mistake);
-                            const data = sortedMistakes.map(([, count]) => count);
-                            
-                            const mistakesChart = new Chart(mistakesCtx, {
-                                type: 'bar',
-                                data: {
-                                    labels: labels,
-                                    datasets: [{
-                                        label: 'Number of Trades',
-                                        data: data,
-                                        backgroundColor: [
-                                            'rgba(239, 68, 68, 0.8)',
-                                            'rgba(245, 158, 11, 0.8)',
-                                            'rgba(249, 115, 22, 0.8)',
-                                            'rgba(220, 38, 127, 0.8)'
-                                        ],
-                                        borderColor: [
-                                            'rgba(239, 68, 68, 1)',
-                                            'rgba(245, 158, 11, 1)',
-                                            'rgba(249, 115, 22, 1)',
-                                            'rgba(220, 38, 127, 1)'
-                                        ],
-                                        borderWidth: 1
-                                    }]
-                                },
-                                options: {
-                                    indexAxis: 'y', // Horizontal bar chart
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    aspectRatio: 1.5,
-                                    plugins: {
-                                        legend: { display: false },
-                                        tooltip: getContinuousTooltipConfig(themeColors, {
-                                            callbacks: {
-                                                label: function(context) {
-                                                    const value = context.parsed.x;
-                                                    return `${value} trades`;
-                                                }
-                                            }
-                                        }),
-                                    },
-                                    scales: {
-                                        x: {
-                                            beginAtZero: true,
-                                    ticks: {
-                                                stepSize: 1,
-                                                color: themeColors.chartText || themeColors.textColor,
-                                                font: {
-                                                    size: 11
-                                                }
-                                            },
-                                            grid: { 
-                                                color: 'rgba(128, 128, 128, 0.1)',
-                                                drawBorder: false
-                                            }
-                                        },
-                                        y: {
-                                            ticks: {
-                                                color: themeColors.chartText || themeColors.textColor,
-                                                font: {
-                                                    size: 11
-                                                }
-                                            },
-                                            grid: { 
-                                                color: 'rgba(128, 128, 128, 0.1)',
-                                                drawBorder: false
-                                            }
-                                        }
-                            }
-                        }
-                    });
-                            
-                            chartInstances['mostCommonMistakesChart'] = mistakesChart;
-                            if (mistakesMessage) {
-                                mistakesMessage.classList.add('hidden');
-                            }
-                        }
-                    } else {
-                        if (mistakesMessage) {
-                            mistakesMessage.classList.remove('hidden');
-                        }
-                }
-                }
-                
-                // Mood Distribution Chart - Temporarily disabled to fix syntax errors
                 
                 // Challenge Progress Chart is handled by updateChallengeProgress function
                 // No need to create it here as it's already created in the challenge section
@@ -5703,17 +5410,17 @@
             if (intradayBtn) {
                 intradayBtn.classList.add('active', 'active-green');
             }
-                
-                // Clear Psychology fields
-                const emotionalStateSelect = document.getElementById('emotional-state');
-                if (emotionalStateSelect) {
-                    emotionalStateSelect.value = '';
-                }
-                
-                // Clear all mistake checkboxes
-                document.querySelectorAll('input[name="mistakes"]').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
+            
+            // Clear Psychology fields
+            const emotionalStateSelect = document.getElementById('emotional-state');
+            if (emotionalStateSelect) {
+                emotionalStateSelect.value = '';
+            }
+            
+            // Clear all mistake checkboxes
+            document.querySelectorAll('input[name="mistakes"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
             
             updateCalculations();
         };
@@ -5789,12 +5496,12 @@
         tradeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const form = new FormData(tradeForm);
-                // Collect mistakes made (checkboxes)
-                const mistakes = [];
-                document.querySelectorAll('input[name="mistakes"]:checked').forEach(checkbox => {
-                    mistakes.push(checkbox.value);
-                });
-                
+            // Collect mistakes made (checkboxes)
+            const mistakes = [];
+            document.querySelectorAll('input[name="mistakes"]:checked').forEach(checkbox => {
+                mistakes.push(checkbox.value);
+            });
+            
             const trade = {
                 id: document.getElementById('trade-id').value || `${Date.now()}`,
                 asset: form.get('asset') || '',
@@ -5813,9 +5520,9 @@
                 other_fees: form.get('otherFees') ? parseFloat(form.get('otherFees')) : 0,
                 strategy: form.get('strategy') || '',
                 outcomeSummary: form.get('outcomeSummary') || '',
-                    reasons: form.get('reasons') || '',
-                    emotionalState: form.get('emotionalState') || '',
-                    mistakes: mistakes
+                reasons: form.get('reasons') || '',
+                emotionalState: form.get('emotionalState') || '',
+                mistakes: mistakes
             };
             try {
                 await dataStore.upsertTrade(trade);
@@ -5824,7 +5531,7 @@
                 renderDashboard();
                 renderTradeHistory();
                 feather.replace();
-                showToast('Trade saved successfully!', 'success');
+                showTradeSavedModal();
             } catch (err) {
                 console.error('Failed to save trade', err);
                 showToast('Failed to save trade. Please try again.', 'error');
@@ -6057,4 +5764,6 @@
 
     </script>
 </body>
+</html>
+
 </html>
