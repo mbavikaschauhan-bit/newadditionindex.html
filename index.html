@@ -1293,7 +1293,85 @@
 
                         <!-- Stat Cards -->
                         <div id="fm-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                           <!-- Dynamic Content Here -->
+                            <!-- Net Account Value -->
+                            <div class="rounded-lg shadow-sm p-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium" style="color: var(--text-secondary);">Net Account Value</p>
+                                        <p id="net-account-value" class="text-2xl font-bold text-green-600">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Net Realized P&L -->
+                            <div class="rounded-lg shadow-sm p-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium" style="color: var(--text-secondary);">Net Realized P&L</p>
+                                        <p id="net-realized-pnl" class="text-2xl font-bold" style="color: var(--text-primary);">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Starting Account Balance -->
+                            <div class="rounded-lg shadow-sm p-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium" style="color: var(--text-secondary);">Starting Account Balance</p>
+                                        <p id="starting-account-balance" class="text-2xl font-bold" style="color: var(--text-primary);">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total Deposits -->
+                            <div class="rounded-lg shadow-sm p-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium" style="color: var(--text-secondary);">Total Deposits</p>
+                                        <p id="total-deposits" class="text-2xl font-bold" style="color: var(--text-primary);">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Deployed Capital -->
+                            <div class="rounded-lg shadow-sm p-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium" style="color: var(--text-secondary);">Deployed Capital</p>
+                                        <p id="deployed-capital" class="text-2xl font-bold" style="color: var(--text-primary);">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Available Cash -->
+                            <div class="rounded-lg shadow-sm p-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium" style="color: var(--text-secondary);">Available Cash</p>
+                                        <p id="available-cash" class="text-2xl font-bold" style="color: var(--text-primary);">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total Withdrawn -->
+                            <div class="rounded-lg shadow-sm p-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium" style="color: var(--text-secondary);">Total Withdrawn</p>
+                                        <p id="total-withdrawn" class="text-2xl font-bold" style="color: var(--text-primary);">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total Open Risk (%) -->
+                            <div class="rounded-lg shadow-sm p-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium" style="color: var(--text-secondary);">Total Open Risk <span id="total-open-risk-percentage" class="text-xs">(0.00%)</span></p>
+                                        <p id="total-open-risk-amount" class="text-2xl font-bold" style="color: var(--text-primary);">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Ledger Table -->
@@ -1541,7 +1619,7 @@
                         </div>
 
                         <div class="mt-12">
-                            <h3 class="text-2xl font-bold mb-6" style="color: var(--text-primary);">Challenge History</h3>                                                                                         
+                            <h3 class="text-2xl font-bold mb-6" style="color: var(--text-primary);">Challenge History</h3>
                             <div id="challenge-history-container" class="space-y-4">
                                 <!-- History items will be injected here -->
                             </div>
@@ -2163,10 +2241,23 @@
         
         const calculateNetPnl = (trade) => {
             if (!trade.exit_price || !trade.exit_date) return 0;
-            const grossPnl = (trade.exit_price - trade.entry_price) * trade.quantity * (trade.direction === 'Short' ? -1 : 1);
+            // Calculate gross P&L based on exit quantity (for partial exit support)
+            // Use exit quantity if provided, otherwise use full entry quantity
+            const exitQty = trade.exit_quantity > 0 ? trade.exit_quantity : trade.quantity;
+            const grossPnl = (trade.exit_price - trade.entry_price) * exitQty * (trade.direction === 'Short' ? -1 : 1);                                                                                     
             const brokerage = trade.brokerage || 0;
             const otherFees = trade.other_fees || 0;
             return grossPnl - brokerage - otherFees;
+        };
+        
+        const calculatePnlPercentage = (trade) => {
+            if (!trade.exit_price || !trade.entry_price || !trade.quantity) return 0;
+            // Calculate P&L percentage based on total investment and total return
+            // This shows the actual return percentage on the total investment
+            // For partial exits: shows what percentage of total investment was returned
+            const netPnl = calculateNetPnl(trade);
+            const totalInvestment = trade.entry_price * trade.quantity; // Always use full entry quantity for total investment
+            return (netPnl / totalInvestment) * 100;
         };
         
         const updateLiveClock = () => {
@@ -2770,32 +2861,107 @@
                 console.error('renderTradeHistory error', e);
             }
         };
+        // Helper function to update metric cards
+        const updateMetricCard = (elementId, value, colorClass) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = formatCurrency(value);
+                if (colorClass === 'text-green-600') {
+                    element.className = 'text-2xl font-bold text-green-600';
+                } else if (colorClass === 'text-red-600') {
+                    element.className = 'text-2xl font-bold text-red-600';
+                } else {
+                    element.className = 'text-2xl font-bold';
+                    element.style.color = 'var(--text-primary)';
+                }
+            }
+        };
+
+        // Helper function to update risk percentage card
+        const updateRiskCard = (percentageElementId, amountElementId, percentage, amount) => {
+            const percentageElement = document.getElementById(percentageElementId);
+            const amountElement = document.getElementById(amountElementId);
+            
+            if (percentageElement) {
+                percentageElement.textContent = `(${percentage.toFixed(1)}%)`;
+            }
+            
+            if (amountElement) {
+                amountElement.textContent = formatCurrency(amount);
+                amountElement.className = 'text-2xl font-bold';
+                // Color coding based on risk level
+                if (percentage <= 10) {
+                    amountElement.style.color = '#10b981'; // Green for low risk
+                } else if (percentage <= 25) {
+                    amountElement.style.color = '#f59e0b'; // Amber for medium risk
+                } else {
+                    amountElement.style.color = '#ef4444'; // Red for high risk
+                }
+            }
+        };
+
         const renderFundManagement = async () => {
             try {
                 // Load ledger
                 appState.ledger = await dataStore.getLedger();
 
+                // Calculate all financial metrics
                 const deposits = appState.ledger.filter(l => l.type === 'Deposit').reduce((s, l) => s + (l.amount || 0), 0);
                 const withdrawals = appState.ledger.filter(l => l.type === 'Withdrawal').reduce((s, l) => s + (l.amount || 0), 0);
-                const netCash = deposits - withdrawals;
+                
+                // Calculate realized P&L from closed trades
+                const realizedPnl = appState.trades
+                    .filter(trade => trade.exit_date && trade.exit_price)
+                    .reduce((total, trade) => {
+                        const netPnl = calculateNetPnl(trade);
+                        return total + netPnl;
+                    }, 0);
+                
+                // Calculate open risk percentage and amount from active trades
+                const openRiskData = (() => {
+                    const activeTrades = appState.trades.filter(trade => !trade.exit_date || !trade.exit_price);
+                    if (activeTrades.length === 0) return { percentage: 0, amount: 0 };
+                    
+                    const totalRiskAmount = activeTrades.reduce((total, trade) => {
+                        // Risk is the potential loss if trade goes against us
+                        // For Long: risk = entry_price * quantity (if price goes to 0)
+                        // For Short: risk = (current_price - entry_price) * quantity (if price goes to infinity)
+                        const tradeValue = trade.entry_price * trade.quantity;
+                        return total + tradeValue;
+                    }, 0);
+                    
+                    const totalAccountValue = netAccountValue > 0 ? netAccountValue : 1; // Avoid division by zero
+                    const percentage = (totalRiskAmount / totalAccountValue) * 100;
+                    
+                    return { percentage, amount: totalRiskAmount };
+                })();
+                
+                // Calculate deployed capital (money currently in active trades)
+                const deployedCapital = appState.trades
+                    .filter(trade => !trade.exit_date || !trade.exit_price)
+                    .reduce((total, trade) => {
+                        return total + (trade.entry_price * trade.quantity);
+                    }, 0);
+                
+                // Calculate available cash
+                const availableCash = deposits - withdrawals - deployedCapital;
+                
+                // Calculate net account value (we need this for risk calculation)
+                const netAccountValue = deposits - withdrawals + realizedPnl;
+                
+                // Starting account balance (first deposit or 0)
+                const startingBalance = appState.ledger.length > 0 ? 
+                    appState.ledger.filter(l => l.type === 'Deposit')[0]?.amount || 0 : 0;
 
-                const fmStats = document.getElementById('fm-stats-grid');
-                if (fmStats) {
-                    fmStats.innerHTML = `
-                        <div class="p-5 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
-                            <h3 class="text-sm font-medium" style="color: var(--text-secondary);">Total Deposited</h3>
-                            <p class="text-2xl font-bold mt-2">${formatCurrency(deposits)}</p>
-                        </div>
-                        <div class="p-5 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
-                            <h3 class="text-sm font-medium" style="color: var(--text-secondary);">Total Withdrawn</h3>
-                            <p class="text-2xl font-bold mt-2">${formatCurrency(withdrawals)}</p>
-                        </div>
-                        <div class="p-5 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
-                            <h3 class="text-sm font-medium" style="color: var(--text-secondary);">Net Cash Flow</h3>
-                            <p class="text-2xl font-bold mt-2 ${netCash >= 0 ? 'text-green-500' : 'text-red-500'}">${formatCurrency(netCash)}</p>
-                        </div>
-                    `;
-                }
+                // Update the metric cards
+                updateMetricCard('net-account-value', netAccountValue, netAccountValue >= 0 ? 'text-green-600' : 'text-red-600');
+                updateMetricCard('net-realized-pnl', realizedPnl, realizedPnl >= 0 ? 'text-green-600' : 'text-red-600');
+                updateMetricCard('starting-account-balance', startingBalance, 'text-gray-900');
+                updateMetricCard('total-deposits', deposits, 'text-gray-900');
+                updateMetricCard('deployed-capital', deployedCapital, 'text-gray-900');
+                updateMetricCard('available-cash', availableCash, availableCash >= 0 ? 'text-green-600' : 'text-red-600');
+                updateMetricCard('total-withdrawn', withdrawals, 'text-gray-900');
+                updateRiskCard('total-open-risk-percentage', 'total-open-risk-amount', openRiskData.percentage, openRiskData.amount);
 
                 const tbody = document.getElementById('fund-ledger-body');
                 if (tbody) {
@@ -5357,9 +5523,9 @@
                                     borderWidth: 1
                                 },
                                 {
-                                    label: 'Other Charges',
+                                    label: 'Total Charges',
                                     data: otherFeesData,
-                                    backgroundColor: 'rgba(245, 158, 11, 0.7)', // Amber for other charges
+                                    backgroundColor: 'rgba(245, 158, 11, 0.7)', // Amber for charges                                                                                                         
                                     borderColor: 'rgba(245, 158, 11, 1)',
                                     borderWidth: 1
                                 }
@@ -5382,20 +5548,20 @@
                                 },
                                 tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
-                                        label: function(context) {
-                                            const value = context.parsed.y;
-                                            const datasetLabel = context.dataset.label;
-                                            return `${datasetLabel}: ₹${value.toLocaleString()}`;
+                                        title: function(context) {
+                                            const monthKey = sortedMonths[context[0].dataIndex];
+                                            return monthKey;
                                         },
-                                        afterLabel: function(context) {
-                                            if (context.datasetIndex === 0) { // Only show for first dataset to avoid duplication
+                                        label: function(context) {
+                                            // Only show custom content for the first dataset to avoid duplication
+                                            if (context.datasetIndex === 0) {
                                                 const monthKey = sortedMonths[context.dataIndex];
                                                 const data = monthlyChargesData[monthKey];
                                                 if (data && data.tradeCount > 0) {
-                                                    return `Total Charges: ₹${data.totalCharges.toLocaleString()}\nTrades: ${data.tradeCount}`;
+                                                    return `Brokerage: ₹${data.brokerage.toLocaleString()}\nCharges: ₹${data.otherFees.toLocaleString()}\nTrades: ${data.tradeCount}\nTotal Charges: ₹${data.totalCharges.toLocaleString()}`;
                                                 }
                                             }
-                                            return '';
+                                            return ''; // Hide default dataset labels
                                         }
                                     }
                                 }),
@@ -5690,6 +5856,7 @@
             const entryPrice = parseFloat(document.getElementById('entry-price').value) || 0;
             const qty = parseFloat(document.getElementById('quantity').value) || 0;
             const exitPrice = parseFloat(document.getElementById('exit-price').value) || 0;
+            const exitQuantity = parseFloat(document.getElementById('exit-quantity').value) || 0;
             const stopLoss = parseFloat(document.getElementById('stop-loss').value) || 0;
             const target = parseFloat(document.getElementById('target').value) || 0;
             const brokerage = parseFloat(document.getElementById('brokerage').value) || 0;
@@ -5706,15 +5873,23 @@
             const targetPercent = (entryPrice && target) ? 
                 ((target - entryPrice) / entryPrice) * 100 : 0;
             
-            // Calculate gross P&L
-            const grossPnl = (exitPrice && qty) ? (exitPrice - entryPrice) * qty : 0;
+            // Calculate gross P&L based on exit quantity (for partial exit support)
+            // Use exit quantity if provided, otherwise use full entry quantity
+            // Get direction from active button or default to Long
+            const direction = document.querySelector('#direction-group .active')?.dataset?.value || 'Long';
+            const directionMultiplier = direction === 'Short' ? -1 : 1;
+            const exitQty = exitQuantity > 0 ? exitQuantity : qty; // Use exit quantity if specified, otherwise full quantity
+            const grossPnl = (exitPrice && exitQty) ? (exitPrice - entryPrice) * exitQty * directionMultiplier : 0;
             
             // Calculate net P&L (after brokerage and charges)
             const totalCharges = brokerage + otherFees;
             const netPnl = grossPnl - totalCharges;
             
-            // Calculate P&L percentage based on entry price
-            const pnlPct = (entryPrice && exitPrice) ? ((exitPrice - entryPrice) / entryPrice) * 100 : 0;
+            // Calculate P&L percentage based on total investment and total return
+            // This shows the actual return percentage on the total investment
+            // For partial exits: shows what percentage of total investment was returned
+            const totalInvestment = entryPrice * qty; // Always use full entry quantity for total investment
+            const pnlPct = (entryPrice && qty && exitPrice) ? (netPnl / totalInvestment) * 100 : 0;
             
             // Update total amount
             const totalEl = document.getElementById('total-amount');
@@ -5810,7 +5985,7 @@
         };
         // Add event listeners for all calculation inputs
         const calculationInputs = [
-            'entry-price', 'quantity', 'exit-price', 'stop-loss', 'target', 
+            'entry-price', 'quantity', 'exit-price', 'exit-quantity', 'stop-loss', 'target', 
             'brokerage', 'other-fees'
         ];
         
