@@ -1882,7 +1882,38 @@
                 textSecondary: isDark ? '#d1d5db' : '#2c333a',
                 textMuted: isDark ? '#d1d5db' : '#3e444a',
                 gridColor: 'rgba(128, 128, 128, 0.1)',
-                chartText: chartTextColor || (isDark ? '#ffffff' : '#212529')
+                chartText: chartTextColor || (isDark ? '#ffffff' : '#212529'),
+                // Ensure we always have a valid text color
+                textColor: isDark ? '#ffffff' : '#212529'
+            };
+        };
+
+        // Get continuous tooltip configuration for all charts
+        const getContinuousTooltipConfig = (themeColors, customCallbacks = {}) => {
+            return {
+                enabled: true,
+                mode: 'index',
+                intersect: false,
+                position: 'nearest',
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: themeColors.chartText || themeColors.textColor,
+                bodyColor: themeColors.chartText || themeColors.textColor,
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderWidth: 1,
+                cornerRadius: 6,
+                displayColors: true,
+                padding: 12,
+                titleFont: {
+                    size: 13,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 12
+                },
+                animation: {
+                    duration: 0
+                },
+                ...customCallbacks
             };
         };
 
@@ -1898,28 +1929,31 @@
                         if (chart.options && chart.options.scales) {
                             // Update axis text colors
                             if (chart.options.scales.x && chart.options.scales.x.ticks) {
-                                chart.options.scales.x.ticks.color = colors.chartText;
+                                chart.options.scales.x.ticks.color = colors.chartText || colors.textColor;
                             }
                             if (chart.options.scales.y && chart.options.scales.y.ticks) {
-                                chart.options.scales.y.ticks.color = colors.chartText;
+                                chart.options.scales.y.ticks.color = colors.chartText || colors.textColor;
                             }
                         }
                         
                         // Update legend colors
                         if (chart.options && chart.options.plugins && chart.options.plugins.legend) {
                             if (chart.options.plugins.legend.labels) {
-                                chart.options.plugins.legend.labels.color = colors.chartText;
+                                chart.options.plugins.legend.labels.color = colors.chartText || colors.textColor;
                             }
                         }
                         
-                        // Update tooltip colors
+                        // Update tooltip colors and continuous mode
                         if (chart.options && chart.options.plugins && chart.options.plugins.tooltip) {
                             if (chart.options.plugins.tooltip.titleColor) {
-                                chart.options.plugins.tooltip.titleColor = colors.chartText;
+                                chart.options.plugins.tooltip.titleColor = colors.chartText || colors.textColor;
                             }
                             if (chart.options.plugins.tooltip.bodyColor) {
-                                chart.options.plugins.tooltip.bodyColor = colors.chartText;
+                                chart.options.plugins.tooltip.bodyColor = colors.chartText || colors.textColor;
                             }
+                            // Ensure continuous tooltip mode is enabled
+                            chart.options.plugins.tooltip.mode = 'index';
+                            chart.options.plugins.tooltip.intersect = false;
                         }
                         
                         // Update grid colors
@@ -3232,13 +3266,9 @@
                                     legend: { 
                                         display: false 
                                     },
-                                    tooltip: {
-                                        titleColor: getThemeColors().chartText,
-                                        bodyColor: getThemeColors().chartText,
-                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                        borderColor: 'rgba(255, 255, 255, 0.2)',
-                                        borderWidth: 1
-                                    }
+                                    tooltip: getContinuousTooltipConfig(themeColors, {
+                                        borderColor: 'rgba(255, 255, 255, 0.2)'
+                                    })
                                 }
                             }
                         });
@@ -3426,6 +3456,10 @@
                 }
                 console.log('Chart.js is loaded, proceeding with chart rendering');
 
+                // Get theme colors once for all charts
+                const themeColors = getThemeColors();
+                console.log('Theme colors for charts:', themeColors);
+
                 const trades = Array.isArray(appState.trades) ? appState.trades : [];
                 const ledger = Array.isArray(appState.ledger) ? appState.ledger : [];
                 const closedTrades = trades.filter(t => t.exit_date && t.exit_price);
@@ -3525,7 +3559,7 @@
                                         color: 'rgba(128, 128, 128, 0.1)'
                                     },
                                     ticks: {
-                                        color: getThemeColors().chartText
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor
                                     }
                                 },
                                 x: {
@@ -3533,7 +3567,7 @@
                                         color: 'rgba(128, 128, 128, 0.1)'
                                     },
                                     ticks: {
-                                        color: getThemeColors().chartText
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor
                                     }
                                 }
                             }
@@ -3589,19 +3623,14 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: {
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                                    borderWidth: 1,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.y;
                                             return `P&L: ₹${value.toLocaleString()}`;
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 y: {
@@ -3611,7 +3640,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: { size: 11 }
                                     }
                                 },
@@ -3620,7 +3649,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: { size: 11 }
                                     }
                                 }
@@ -3775,12 +3804,8 @@
                                 },
                             plugins: {
                                 legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     borderColor: 'rgba(59, 130, 246, 1)',
-                                    borderWidth: 1,
                                     callbacks: {
                                         title: function(context) {
                                             return `Date: ${context[0].label}`;
@@ -3789,7 +3814,7 @@
                                             return `Total Equity: ₹${context.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                                         }
                                     }
-                                }
+                                }),
                             },
                                 scales: {
                                 y: {
@@ -3802,7 +3827,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0});
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         },
@@ -3815,7 +3840,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         },
@@ -3836,6 +3861,7 @@
                     if (chartInstances['accountBalanceChart']) {
                         chartInstances['accountBalanceChart'].destroy();
                     }
+                    
                     
                     // Get first deposit to determine starting point
                     const firstDeposit = ledger.find(l => l.type === 'Deposit');
@@ -3928,12 +3954,8 @@
                                 legend: {
                                     display: false
                                 },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     borderColor: 'rgba(20, 184, 166, 1)',
-                                    borderWidth: 1,
                                     callbacks: {
                                         title: function(context) {
                                             return `Date: ${context[0].label}`;
@@ -3942,7 +3964,7 @@
                                             return `Account Value: ₹${context.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 y: {
@@ -3955,7 +3977,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: themeColors.chartText || themeColors.textColor,
                                         font: {
                                             size: 11
                                         }
@@ -3967,7 +3989,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         },
@@ -4048,12 +4070,7 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
-                                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                                    borderWidth: 1,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         title: function(context) {
                                             return `Month: ${context[0].label}`;
@@ -4067,7 +4084,7 @@
                                             ];
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 y: {
@@ -4080,7 +4097,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: { size: 11 }
                                     }
                                 },
@@ -4092,7 +4109,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: { size: 11 }
                                     }
                                 }
@@ -4172,11 +4189,7 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
-                                    borderWidth: 1,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.y;
@@ -4191,7 +4204,7 @@
                                             return '';
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 y: {
@@ -4204,7 +4217,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4218,7 +4231,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4297,11 +4310,7 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
-                                    borderWidth: 1,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.y;
@@ -4316,7 +4325,7 @@
                                             return '';
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 y: {
@@ -4329,7 +4338,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4343,7 +4352,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4391,7 +4400,7 @@
                                         labels: {
                                             usePointStyle: true,
                                             padding: 20,
-                                            color: getThemeColors().chartText,
+                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                             font: {
                                                 size: 12
                                             }
@@ -4428,13 +4437,13 @@
                                         labels: {
                                             usePointStyle: true,
                                             padding: 20,
-                                            color: getThemeColors().chartText,
+                                            color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                             font: {
                                                 size: 12
                                             }
                                         }
                                     },
-                                    tooltip: {
+                                    tooltip: getContinuousTooltipConfig(themeColors, {
                                         callbacks: {
                                             label: function(context) {
                                                 const label = context.label || '';
@@ -4444,7 +4453,7 @@
                                                 return `${label}: ${value} trades (${percentage}%)`;
                                             }
                                         }
-                                    }
+                                    })
                                 }
                             }
                         });
@@ -4522,18 +4531,14 @@
                             aspectRatio: 1.5,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
-                                    borderWidth: 1,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.x;
                                             return `P&L: ₹${value.toLocaleString()}`;
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 x: {
@@ -4546,7 +4551,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4558,7 +4563,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4631,19 +4636,15 @@
                             aspectRatio: 1.5,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     borderColor: 'rgba(249, 115, 22, 1)',
-                                    borderWidth: 1,
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.x;
                                             return `${value} trades`;
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 x: {
@@ -4653,7 +4654,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         },
@@ -4666,7 +4667,7 @@
                                         drawBorder: false
                                     },
                                     ticks: {
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -4680,7 +4681,7 @@
                 // Daily Win Rate Chart with comprehensive P&L analysis
                 const dailyWinRateCtx = getCtx('dailyWinRateChart');
                 const dailyWinRateMessage = document.getElementById('dailyWinRateMessage');
-                if (dailyWinRateCtx) {
+                if (dailyWinRateCtx && typeof Chart !== 'undefined') {
                     if (chartInstances['dailyWinRateChart']) {
                         chartInstances['dailyWinRateChart'].destroy();
                     }
@@ -4852,8 +4853,23 @@
                     // Ensure we have data to display
                     if (chartLabels.length === 0 || dailyWinRateData.length === 0) {
                         console.error('Daily Win Rate Chart: No data to display');
+                        clearTimeout(loadingTimeout);
                         if (dailyWinRateMessage) {
                             dailyWinRateMessage.textContent = 'No data available';
+                            dailyWinRateMessage.classList.remove('hidden');
+                        }
+                        return;
+                    }
+                    
+                    // Validate data arrays
+                    if (!Array.isArray(chartLabels) || !Array.isArray(dailyWinRateData)) {
+                        console.error('Daily Win Rate Chart: Invalid data format', {
+                            chartLabels: typeof chartLabels,
+                            dailyWinRateData: typeof dailyWinRateData
+                        });
+                        clearTimeout(loadingTimeout);
+                        if (dailyWinRateMessage) {
+                            dailyWinRateMessage.textContent = 'Invalid data format';
                             dailyWinRateMessage.classList.remove('hidden');
                         }
                         return;
@@ -4872,6 +4888,7 @@
                             tooltipData: tooltipData.length,
                             ctx: !!dailyWinRateCtx
                         });
+                        
                         
                         const dailyWinRateChart = new Chart(dailyWinRateCtx, {
                         type: 'line',
@@ -4902,18 +4919,13 @@
                                     labels: {
                                         usePointStyle: true,
                                         padding: 20,
-                                        color: getThemeColors().chartText,
+                                        color: themeColors.chartText || '#212529',
                                         font: {
                                             size: 12
                                         }
                                     }
                                 },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
-                                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                                    borderWidth: 1,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         title: function(context) {
                                             const index = context[0].dataIndex;
@@ -4935,7 +4947,7 @@
                                             return lines;
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 y: {
@@ -4945,7 +4957,7 @@
                                         callback: function(value) {
                                             return value + '%';
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: themeColors.chartText || '#212529',
                                         font: {
                                             size: 11
                                         }
@@ -4956,7 +4968,7 @@
                                 },
                                 x: {
                                     ticks: {
-                                        color: getThemeColors().chartText,
+                                        color: themeColors.chartText || '#212529',
                                         font: {
                                             size: 11
                                         },
@@ -4995,18 +5007,34 @@
                         }
                     } catch (error) {
                         console.error('Error creating Daily Win Rate Chart:', error);
+                        console.error('Error details:', {
+                            message: error.message,
+                            stack: error.stack,
+                            chartLabels: chartLabels,
+                            dailyWinRateData: dailyWinRateData,
+                            tooltipData: tooltipData,
+                            themeColors: themeColors
+                        });
                         
                         // Clear the loading timeout
                         clearTimeout(loadingTimeout);
                         
                         // Show error message
                         if (dailyWinRateMessage) {
-                            dailyWinRateMessage.textContent = 'Error loading chart';
+                            dailyWinRateMessage.textContent = `Error loading chart: ${error.message}`;
                             dailyWinRateMessage.classList.remove('hidden');
                         }
                     }
                 } else {
-                    console.log('Daily Win Rate Chart canvas not found - canvas element missing');
+                    if (!dailyWinRateCtx) {
+                        console.log('Daily Win Rate Chart canvas not found - canvas element missing');
+                    } else if (typeof Chart === 'undefined') {
+                        console.error('Chart.js not loaded - cannot create Daily Win Rate Chart');
+                        if (dailyWinRateMessage) {
+                            dailyWinRateMessage.textContent = 'Chart library not loaded';
+                            dailyWinRateMessage.classList.remove('hidden');
+                        }
+                    }
                 }
                 
                 // Strategy vs P&L Chart
@@ -5059,12 +5087,8 @@
                             aspectRatio: 2,
                             plugins: {
                                 legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     borderColor: 'rgba(147, 51, 234, 1)',
-                                    borderWidth: 1,
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.y;
@@ -5079,7 +5103,7 @@
                                             return '';
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 y: {
@@ -5092,7 +5116,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -5106,7 +5130,7 @@
                                     ticks: {
                                         maxRotation: 0,
                                         minRotation: 0,
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -5204,17 +5228,13 @@
                                     display: true,
                                     position: 'top',
                                     labels: {
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 12
                                         }
                                     }
                                 },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: getThemeColors().chartText,
-                                    bodyColor: getThemeColors().chartText,
-                                    borderWidth: 1,
+                                tooltip: getContinuousTooltipConfig(themeColors, {
                                     callbacks: {
                                         label: function(context) {
                                             const value = context.parsed.y;
@@ -5232,7 +5252,7 @@
                                             return '';
                                         }
                                     }
-                                }
+                                }),
                             },
                             scales: {
                                 y: {
@@ -5246,7 +5266,7 @@
                                         callback: function(value) {
                                             return '₹' + value.toLocaleString();
                                         },
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -5261,7 +5281,7 @@
                                     ticks: {
                                         maxRotation: 45,
                                         minRotation: 0,
-                                        color: getThemeColors().chartText,
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
                                         font: {
                                             size: 11
                                         }
@@ -5273,76 +5293,8 @@
                     chartInstances['monthlyChargesChart'] = monthlyChargesChart;
                 }
                 
-                // Challenge Progress Chart
-                const challengeCtx = getCtx('challengeProgressChart');
-                if (challengeCtx) {
-                    if (chartInstances['challengeProgressChart']) {
-                        chartInstances['challengeProgressChart'].destroy();
-                    }
-                    
-                    // Calculate challenge progress (simplified)
-                    const progressData = [];
-                    const progressLabels = [];
-                    
-                    // Generate sample progress data
-                    for (let i = 0; i <= 30; i++) {
-                        progressLabels.push(`Day ${i}`);
-                        progressData.push(Math.min(100, (i / 30) * 100));
-                    }
-                    
-                    const challengeChart = new Chart(challengeCtx, {
-                        type: 'line',
-                        data: {
-                            labels: progressLabels,
-                            datasets: [{
-                                label: 'Challenge Progress',
-                                data: progressData,
-                                borderColor: 'rgba(34, 197, 94, 1)',
-                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                                borderWidth: 2,
-                                fill: true,
-                                tension: 0.4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            aspectRatio: 2,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            return `Progress: ${context.parsed.y.toFixed(1)}%`;
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    grid: { color: 'rgba(128, 128, 128, 0.1)' },
-                                    ticks: {
-                                        callback: function(value) {
-                                            return value + '%';
-                                        },
-                                        color: getThemeColors().chartText,
-                                        font: { size: 11 }
-                                    }
-                                },
-                                x: {
-                                    grid: { color: 'rgba(128, 128, 128, 0.1)' },
-                                    ticks: {
-                                        color: getThemeColors().chartText,
-                                        font: { size: 11 }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    chartInstances['challengeProgressChart'] = challengeChart;
-                }
+                // Challenge Progress Chart is handled by updateChallengeProgress function
+                // No need to create it here as it's already created in the challenge section
             } catch (e) {
                 console.error('renderAllCharts error', e);
             }
