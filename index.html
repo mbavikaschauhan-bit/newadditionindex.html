@@ -998,8 +998,24 @@
                                 </div>
                             </div>
 
+                            <!-- Net P&L by Mood Chart -->
+                            <div class="grid grid-cols-1 gap-8">
+                                <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+                                    <div class="flex justify-between items-center mb-4">
+                                        <div>
+                                            <h3 class="font-semibold" style="color: var(--text-primary);">Net P&L by Mood</h3>
+                                            <p class="text-sm mt-1" style="color: var(--text-muted);">Analyze how your emotional state impacts trading profitability (net P&L after costs)</p>
+                                        </div>
+                                    </div>
+                                    <div class="relative h-64">
+                                        <canvas id="netPnlByMoodChart"></canvas>
+                                        <div id="netPnlByMoodMessage" class="hidden absolute inset-0 flex items-center justify-center" style="color: var(--text-muted);">Loading chart...</div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Most Common Mistakes Chart -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="grid grid-cols-1 gap-8">
                                 <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
                                     <div class="flex justify-between items-center mb-4">
                                         <h3 class="font-semibold" style="color: var(--text-primary);">Most Common Mistakes</h3>
@@ -1007,17 +1023,6 @@
                                     <div class="relative h-64">
                                         <canvas id="mostCommonMistakesChart"></canvas>
                                         <div id="mostCommonMistakesMessage" class="hidden absolute inset-0 flex items-center justify-center" style="color: var(--text-muted);">Loading chart...</div>
-                                    </div>
-                                </div>
-                                <div class="p-6 rounded-lg shadow-sm" style="background-color: var(--bg-primary); border: 1px solid var(--border-color);">
-                                    <div class="flex justify-between items-center mb-4">
-                                        <h3 class="font-semibold" style="color: var(--text-primary);">Mistakes Analysis</h3>
-                                        <span class="text-sm" style="color: var(--text-muted);">Insights</span>
-                                    </div>
-                                    <div class="relative h-64 flex items-center justify-center">
-                                        <div id="mistakesInsights" class="text-center" style="color: var(--text-muted);">
-                                            <p class="text-sm">Select mistakes while adding trades to see analysis here</p>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -5698,6 +5703,169 @@
                     chartInstances['monthlyChargesChart'] = monthlyChargesChart;
                 }
                 
+                // Net P&L by Mood Chart
+                const netPnlByMoodCtx = getCtx('netPnlByMoodChart');
+                const netPnlByMoodMessage = document.getElementById('netPnlByMoodMessage');
+                if (netPnlByMoodCtx) {
+                    if (chartInstances['netPnlByMoodChart']) {
+                        chartInstances['netPnlByMoodChart'].destroy();
+                    }
+                    
+                    // Show loading message
+                    if (netPnlByMoodMessage) {
+                        netPnlByMoodMessage.classList.remove('hidden');
+                    }
+                    
+                    // Get trades to analyze (use filtered trades if available, otherwise all trades)
+                    const tradesToAnalyze = appState.trades || [];
+                    
+                    // Calculate Net P&L by mood
+                    const moodPnl = {};
+                    const moodTradeCounts = {};
+                    
+                    // Define all possible moods
+                    const allMoods = ['Calm', 'Confident', 'Neutral', 'Anxious', 'Panicked', 'Excited', 'Frustrated', 'Greedy', 'Fearful'];
+                    
+                    // Initialize all moods with zero values
+                    allMoods.forEach(mood => {
+                        moodPnl[mood] = 0;
+                        moodTradeCounts[mood] = 0;
+                    });
+                    
+                    // Calculate P&L for each mood
+                    tradesToAnalyze.forEach(trade => {
+                        if (trade.emotionalState && trade.exit_date && trade.exit_price) {
+                            const pnl = calculateNetPnl(trade);
+                            moodPnl[trade.emotionalState] = (moodPnl[trade.emotionalState] || 0) + pnl;
+                            moodTradeCounts[trade.emotionalState] = (moodTradeCounts[trade.emotionalState] || 0) + 1;
+                        }
+                    });
+                    
+                    // Filter out moods with no trades and sort by P&L
+                    const moodData = Object.entries(moodPnl)
+                        .filter(([mood, pnl]) => moodTradeCounts[mood] > 0)
+                        .sort(([,a], [,b]) => b - a); // Sort by P&L descending
+                    
+                    if (moodData.length === 0) {
+                        // Show message if no mood data
+                        if (netPnlByMoodMessage) {
+                            if (appState.trades.length === 0) {
+                                netPnlByMoodMessage.textContent = 'No trades found. Add some trades first.';
+                            } else {
+                                netPnlByMoodMessage.textContent = 'No emotional state data found. Select emotional state while adding trades to see analysis.';
+                            }
+                            netPnlByMoodMessage.classList.remove('hidden');
+                        }
+                        return;
+                    }
+                    
+                    const labels = moodData.map(([mood]) => mood);
+                    const data = moodData.map(([, pnl]) => pnl);
+                    const tradeCounts = moodData.map(([mood]) => moodTradeCounts[mood]);
+                    
+                    // Hide loading message
+                    if (netPnlByMoodMessage) {
+                        netPnlByMoodMessage.classList.add('hidden');
+                    }
+                    
+                    const netPnlByMoodChart = new Chart(netPnlByMoodCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Net P&L',
+                                data: data,
+                                backgroundColor: data.map(pnl => pnl >= 0 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'),
+                                borderColor: data.map(pnl => pnl >= 0 ? 'rgba(16, 185, 129, 1)' : 'rgba(239, 68, 68, 1)'),
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                borderSkipped: false,
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y', // Horizontal bar chart
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    backgroundColor: '#111827',
+                                    titleColor: '#ffffff',
+                                    bodyColor: '#ffffff',
+                                    borderColor: 'rgba(255, 255, 255, 0.06)',
+                                    borderWidth: 1,
+                                    cornerRadius: 6,
+                                    padding: 12,
+                                    titleFont: {
+                                        size: 13,
+                                        weight: 'bold'
+                                    },
+                                    bodyFont: {
+                                        size: 12
+                                    },
+                                    animation: {
+                                        duration: 0
+                                    },
+                                    callbacks: {
+                                        title: function(context) {
+                                            return context[0].label;
+                                        },
+                                        label: function(context) {
+                                            const pnl = context.parsed.x;
+                                            const mood = context.label;
+                                            const tradeCount = moodTradeCounts[mood];
+                                            return `Net P&L: ${formatCurrency(pnl)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        font: {
+                                            size: 12
+                                        },
+                                        callback: function(value) {
+                                            return formatCurrency(value);
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(128, 128, 128, 0.1)',
+                                        drawBorder: false
+                                    },
+                                    title: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    ticks: {
+                                        color: (themeColors || getThemeColors()).chartText || (themeColors || getThemeColors()).textColor,
+                                        font: {
+                                            size: 12
+                                        }
+                                    },
+                                    grid: {
+                                        display: false
+                                    },
+                                    title: {
+                                        display: false
+                                    }
+                                }
+                            },
+                            animation: {
+                                duration: 1000,
+                                easing: 'easeInOutQuart'
+                            }
+                        }
+                    });
+                    
+                    chartInstances['netPnlByMoodChart'] = netPnlByMoodChart;
+                }
+                
                 // Most Common Mistakes Chart
                 const mostCommonMistakesCtx = getCtx('mostCommonMistakesChart');
                 const mostCommonMistakesMessage = document.getElementById('mostCommonMistakesMessage');
@@ -5791,18 +5959,6 @@
                             mostCommonMistakesMessage.classList.remove('hidden');
                         }
                         
-                        // Update insights panel for no data case
-                        const insightsPanel = document.getElementById('mistakesInsights');
-                        if (insightsPanel) {
-                            insightsPanel.innerHTML = `
-                                <div class="text-center space-y-3">
-                                    <div class="text-2xl font-bold" style="color: var(--text-primary);">0</div>
-                                    <div class="text-sm" style="color: var(--text-muted);">Total Mistakes</div>
-                                    <div class="text-xs mt-4" style="color: var(--text-muted);">Found ${appState.trades.length} total trades</div>
-                                    <div class="text-xs" style="color: var(--text-muted);">Select mistakes while adding trades to see analysis</div>
-                                </div>
-                            `;
-                        }
                         return;
                     }
                     
@@ -5905,35 +6061,6 @@
                     });
                     
                     chartInstances['mostCommonMistakesChart'] = mostCommonMistakesChart;
-                    
-                    // Update insights panel
-                    const insightsPanel = document.getElementById('mistakesInsights');
-                    if (insightsPanel) {
-                        const totalMistakes = Object.values(mistakeCounts).reduce((sum, count) => sum + count, 0);
-                        const uniqueMistakes = Object.keys(mistakeCounts).length;
-                        const totalTrades = tradesToAnalyze.length;
-                        const tradesWithMistakes = tradesToAnalyze.filter(trade => 
-                            trade.mistakes && Array.isArray(trade.mistakes) && 
-                            trade.mistakes.length > 0 && !trade.mistakes.includes('No Mistakes')
-                        ).length;
-                        
-                        insightsPanel.innerHTML = `
-                            <div class="space-y-3">
-                                <div class="text-center">
-                                    <div class="text-2xl font-bold" style="color: var(--text-primary);">${totalMistakes}</div>
-                                    <div class="text-sm" style="color: var(--text-muted);">Total Mistakes</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="text-lg font-semibold" style="color: var(--text-primary);">${uniqueMistakes}</div>
-                                    <div class="text-sm" style="color: var(--text-muted);">Unique Mistake Types</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="text-lg font-semibold" style="color: var(--text-primary);">${tradesWithMistakes}/${totalTrades}</div>
-                                    <div class="text-sm" style="color: var(--text-muted);">Trades with Mistakes</div>
-                                </div>
-                            </div>
-                        `;
-                    }
                 }
                 
                 // Challenge Progress Chart is handled by updateChallengeProgress function
