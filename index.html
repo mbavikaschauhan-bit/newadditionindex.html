@@ -661,6 +661,44 @@
             color: white;
             border-color: #005000;
         }
+
+        /* Date Filter Styles */
+        #dateFilter, #startDate, #endDate {
+            transition: all 0.2s ease-in-out;
+        }
+
+        #dateFilter:focus, #startDate:focus, #endDate:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+
+        /* Custom date range animation */
+        #customDateRange {
+            transition: all 0.3s ease-in-out;
+        }
+
+        #customDateRange.hidden {
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        #customDateRange:not(.hidden) {
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        /* Mobile responsiveness for date filter */
+        @media (max-width: 640px) {
+            .flex-col.sm\\:flex-row {
+                align-items: stretch;
+            }
+            
+            #dateFilter, #startDate, #endDate {
+                width: 100%;
+                min-width: auto;
+            }
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -774,6 +812,36 @@
                 <div class="p-4 md:p-8">
                     <!-- Dashboard Page -->
                     <div id="dashboard" class="page active">
+                        
+                        <!-- Analytics Section with Date Filter -->
+                        <div class="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
+                            <h2 class="text-2xl font-bold" style="color: var(--text-primary);">Analytics</h2>
+                            
+                            <!-- Date Filter Section -->
+                            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                                <label class="text-sm font-medium" style="color: var(--text-secondary);">Filter by:</label>
+                                <div class="relative">
+                                    <select id="dateFilter" class="px-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary); min-width: 180px;">
+                                        <option value="all-time">All Time</option>
+                                        <option value="today">Today</option>
+                                        <option value="yesterday">Yesterday</option>
+                                        <option value="last-7-days">Last 7 Days</option>
+                                        <option value="last-30-days">Last 30 Days</option>
+                                        <option value="last-3-months">Last 3 Months</option>
+                                        <option value="last-6-months">Last 6 Months</option>
+                                        <option value="last-1-year">Last 1 Year</option>
+                                        <option value="custom">Custom Date Range</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Custom Date Range Inputs (Hidden by default) -->
+                                <div id="customDateRange" class="hidden flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                                    <input type="date" id="startDate" class="px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);">
+                                    <span class="text-sm" style="color: var(--text-secondary);">to</span>
+                                    <input type="date" id="endDate" class="px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);">
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- Performance Stats -->
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -6765,6 +6833,255 @@
                 }
             });
         };
+
+        // Date Filter Functionality (Optimized for Speed)
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateFilter = document.getElementById('dateFilter');
+            const customDateRange = document.getElementById('customDateRange');
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            
+            // Cache for performance optimization
+            let lastFilterValue = 'all-time';
+            let cachedFilteredTrades = null;
+            // Show/hide custom date range inputs and refresh data instantly
+            dateFilter.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customDateRange.classList.remove('hidden');
+                } else {
+                    customDateRange.classList.add('hidden');
+                }
+                // Instant data refresh when filter changes
+                refreshDashboardData();
+            });
+
+            // Handle custom date range changes with instant updates
+            startDate.addEventListener('change', function() {
+                if (dateFilter.value === 'custom') {
+                    refreshDashboardData();
+                }
+            });
+
+            endDate.addEventListener('change', function() {
+                if (dateFilter.value === 'custom') {
+                    refreshDashboardData();
+                }
+            });
+
+            // Function to get date range based on selected filter
+            function getDateRange() {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                switch (dateFilter.value) {
+                    case 'today':
+                        return {
+                            start: today,
+                            end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+                        };
+                    case 'yesterday':
+                        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+                        return {
+                            start: yesterday,
+                            end: new Date(yesterday.getTime() + 24 * 60 * 60 * 1000 - 1)
+                        };
+                    case 'last-7-days':
+                        return {
+                            start: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000),
+                            end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+                        };
+                    case 'last-30-days':
+                        return {
+                            start: new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000),
+                            end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+                        };
+                    case 'last-3-months':
+                        const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                        return {
+                            start: threeMonthsAgo,
+                            end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+                        };
+                    case 'last-6-months':
+                        const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                        return {
+                            start: sixMonthsAgo,
+                            end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+                        };
+                    case 'last-1-year':
+                        const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                        return {
+                            start: oneYearAgo,
+                            end: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+                        };
+                    case 'custom':
+                        if (startDate.value && endDate.value) {
+                            return {
+                                start: new Date(startDate.value),
+                                end: new Date(endDate.value + 'T23:59:59')
+                            };
+                        }
+                        return null;
+                    case 'all-time':
+                    default:
+                        return null; // No date filtering
+                }
+            }
+
+            // Function to refresh dashboard data based on date filter (optimized for speed)
+            function refreshDashboardData() {
+                const currentFilterValue = dateFilter.value;
+                
+                // Use cache if filter hasn't changed
+                if (currentFilterValue === lastFilterValue && cachedFilteredTrades) {
+                    updateDashboardStats(cachedFilteredTrades);
+                    updateCharts(cachedFilteredTrades);
+                    return;
+                }
+                
+                const dateRange = getDateRange();
+                
+                // Filter trades based on date range
+                const filteredTrades = filterTradesByDateRange(dateRange);
+                
+                // Cache the results
+                lastFilterValue = currentFilterValue;
+                cachedFilteredTrades = filteredTrades;
+                
+                // Update dashboard stats instantly
+                updateDashboardStats(filteredTrades);
+                
+                // Update charts with optimized rendering
+                updateCharts(filteredTrades);
+            }
+
+            // Function to filter trades by date range
+            function filterTradesByDateRange(dateRange) {
+                const trades = appState.trades || [];
+                if (!dateRange) {
+                    return trades; // Return all trades if no date range
+                }
+
+                return trades.filter(trade => {
+                    const tradeDate = new Date(trade.exit_date || trade.entry_date);
+                    return tradeDate >= dateRange.start && tradeDate <= dateRange.end;
+                });
+            }
+
+            // Function to update dashboard stats
+            function updateDashboardStats(filteredTrades) {
+                // Only consider closed trades (with exit_date and exit_price)
+                const closedTrades = filteredTrades.filter(t => t.exit_price && t.exit_date);
+                
+                // Calculate stats from filtered trades
+                let netPnl = 0, grossProfit = 0, grossLoss = 0, wins = 0, losses = 0;
+                
+                closedTrades.forEach(trade => {
+                    const pnl = calculateNetPnl(trade);
+                    netPnl += pnl;
+                    if (pnl > 0) {
+                        wins++;
+                        grossProfit += pnl;
+                    } else if (pnl < 0) {
+                        losses++;
+                        grossLoss += Math.abs(pnl);
+                    }
+                });
+                
+                const totalTrades = closedTrades.length;
+                const winRate = totalTrades > 0 ? (wins / totalTrades * 100).toFixed(1) : 0;
+                const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : (grossProfit > 0 ? '∞' : '0.00');
+                const avgWin = wins > 0 ? (grossProfit / wins).toFixed(2) : '0.00';
+                const avgLoss = losses > 0 ? (grossLoss / losses).toFixed(2) : '0.00';
+                const avgWinLoss = totalTrades > 0 ? (netPnl / totalTrades).toFixed(2) : '0.00';
+
+                // Update DOM elements
+                const netPnlEl = document.getElementById('db-net-pnl');
+                if (netPnlEl) {
+                    netPnlEl.textContent = formatCurrency(netPnl);
+                    netPnlEl.className = `text-2xl font-bold mt-2 ${netPnl >= 0 ? 'text-green-500' : 'text-red-500'}`;
+                }
+                
+                const totalTradesEl = document.getElementById('db-total-trades');
+                if (totalTradesEl) totalTradesEl.textContent = `${totalTrades} trades`;
+                
+                const winRateEl = document.getElementById('db-win-rate');
+                if (winRateEl) winRateEl.textContent = `${winRate}%`;
+                
+                const wonTradesEl = document.getElementById('db-won-trades');
+                if (wonTradesEl) wonTradesEl.textContent = `${wins} won`;
+                
+                const lostTradesEl = document.getElementById('db-lost-trades');
+                if (lostTradesEl) lostTradesEl.textContent = `${losses} lost`;
+                
+                const profitFactorEl = document.getElementById('db-profit-factor');
+                if (profitFactorEl) profitFactorEl.textContent = profitFactor;
+                
+                const avgWinLossEl = document.getElementById('db-avg-win-loss');
+                if (avgWinLossEl) avgWinLossEl.textContent = avgWinLoss;
+                
+                // Update account summary with filtered data
+                updateAccountSummary(filteredTrades, netPnl);
+            }
+            
+            // Function to update account summary with filtered data
+            function updateAccountSummary(filteredTrades, netPnl) {
+                const ledger = appState.ledger || [];
+                const deposits = ledger.filter(l => l.type === 'deposit').reduce((sum, l) => sum + (l.amount || 0), 0);
+                const withdrawals = ledger.filter(l => l.type === 'withdrawal').reduce((sum, l) => sum + (l.amount || 0), 0);
+                const deployedCapital = filteredTrades.filter(t => t.exit_price && t.exit_date).reduce((sum, t) => sum + (t.quantity * t.entry_price), 0);
+                
+                const accountValue = deposits - withdrawals + netPnl;
+                const availableCash = Math.max(0, accountValue - deployedCapital);
+                
+                const summaryEl = document.getElementById('db-account-summary');
+                if (summaryEl) {
+                    const txt = "text-2xl font-bold";
+                    summaryEl.innerHTML = `
+                        <div><p class="text-sm" style="color: var(--text-secondary);">NET ACCOUNT VALUE</p><p class="${txt} ${accountValue >= 0 ? 'text-green-500' : 'text-red-500'}">${formatCurrency(accountValue)}</p></div>
+                        <div><p class="text-sm" style="color: var(--text-secondary);">NET REALIZED P&L</p><p class="${txt} ${netPnl >= 0 ? 'text-green-500' : 'text-red-500'}">${formatCurrency(netPnl)}</p></div>
+                        <div><p class="text-sm" style="color: var(--text-secondary);">AVAILABLE CASH</p><p class="${txt}">${formatCurrency(availableCash)}</p></div>
+                        <div><p class="text-sm" style="color: var(--text-secondary);">DEPLOYED CAPITAL</p><p class="${txt}">${formatCurrency(deployedCapital)}</p></div>
+                        <div><p class="text-sm" style="color: var(--text-secondary);">TOTAL DEPOSITS</p><p class="${txt}">${formatCurrency(deposits)}</p></div>
+                        <div><p class="text-sm" style="color: var(--text-secondary);">TOTAL WITHDRAWN</p><p class="${txt}">${formatCurrency(withdrawals)}</p></div>
+                        <div><p class="text-sm" style="color: var(--text-secondary);">STARTING BALANCE</p><p class="${txt}">₹0.00</p></div>`;
+                }
+            }
+
+            // Function to update charts with filtered data (optimized)
+            function updateCharts(filteredTrades) {
+                // Only update charts if they exist and are initialized
+                if (typeof renderAllCharts === 'function' && chartInstances) {
+                    // Store the filtered trades temporarily for chart rendering
+                    const originalTrades = appState.trades;
+                    appState.trades = filteredTrades;
+                    
+                    // Re-render all charts with filtered data
+                    renderAllCharts();
+                    
+                    // Restore original trades
+                    appState.trades = originalTrades;
+                }
+            }
+
+            // Function to clear cache when new data is available
+            function clearFilterCache() {
+                cachedFilteredTrades = null;
+                lastFilterValue = null;
+            }
+            
+            // Initialize with default "All Time" selection
+            dateFilter.value = 'all-time';
+            lastFilterValue = 'all-time';
+            
+            // Clear cache when trades data changes (for real-time updates)
+            const originalUpdateTradeDependentUI = window.updateTradeDependentUI;
+            if (originalUpdateTradeDependentUI) {
+                window.updateTradeDependentUI = function() {
+                    clearFilterCache();
+                    return originalUpdateTradeDependentUI.apply(this, arguments);
+                };
+            }
+        });
 
     </script>
 
