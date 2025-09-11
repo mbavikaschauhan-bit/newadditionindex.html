@@ -2772,15 +2772,23 @@
                 if (!tbody) return;
                 tbody.innerHTML = '';
                 const rowsHtml = appState.trades.map(t => {
-                    const isClosed = t.exit_date && t.exit_price;
-                    const pnl = isClosed ? calculateNetPnl(t) : 0;
-                    const status = isClosed ? 'Closed' : 'Open';
+                    const isClosed = t.exit_date && t.exit_price && (!t.exit_quantity || t.exit_quantity >= t.quantity);
+                    const isPartialExit = t.exit_date && t.exit_price && t.exit_quantity && t.exit_quantity < t.quantity;
+                    const pnl = (isClosed || isPartialExit) ? calculateNetPnl(t) : 0;
+                    let status = 'Open';
+                    if (isClosed) status = 'Closed';
+                    else if (isPartialExit) status = 'Partial Exit';
                     const type = t.direction || '—';
                     return `
                         <tr>
                             <td class="px-6 py-3">${t.asset || '—'}</td>
                             <td class="px-6 py-3 ${pnl >= 0 ? 'text-green-500' : 'text-red-500'}">${formatCurrency(pnl)}</td>
-                            <td class="px-6 py-3">${status}</td>
+                            <td class="px-6 py-3">
+                                ${isPartialExit ? 
+                                    `<span class="text-blue-600 underline cursor-pointer" data-action="view-partial" data-id="${t.id}">${status}</span>` : 
+                                    status
+                                }
+                            </td>
                             <td class="px-6 py-3">${t.entry_price ?? '—'}</td>
                             <td class="px-6 py-3">${type}</td>
                             <td class="px-6 py-3">${t.entry_date || '—'}</td>
@@ -2790,6 +2798,7 @@
                             <td class="px-6 py-3">${t.exit_date || '—'}</td>
                             <td class="px-6 py-3 space-x-2">
                                 <button class="text-blue-600 underline text-xs" data-action="edit" data-id="${t.id}">Edit</button>
+                                ${!isClosed ? `<button class="text-green-600 underline text-xs" data-action="exit" data-id="${t.id}">Exit</button>` : ''}
                                 <button class="text-red-600 underline text-xs" data-action="delete" data-id="${t.id}">Delete</button>
                             </td>
                         </tr>`;
@@ -2855,6 +2864,22 @@
                                 renderDashboard();
                             } catch (err) { console.error('delete trade failed', err); }
                         }, 'Confirm Deletion', 'Delete');
+                    });
+                });
+                tbody.querySelectorAll('button[data-action="exit"]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.getAttribute('data-id');
+                        const trade = appState.trades.find(x => String(x.id) === String(id));
+                        if (!trade) return;
+                        showExitTradeModal(trade);
+                    });
+                });
+                tbody.querySelectorAll('span[data-action="view-partial"]').forEach(span => {
+                    span.addEventListener('click', () => {
+                        const id = span.getAttribute('data-id');
+                        const trade = appState.trades.find(x => String(x.id) === String(id));
+                        if (!trade) return;
+                        showPartialExitDetailsModal(trade);
                     });
                 });
             } catch (e) {
@@ -6398,7 +6423,558 @@
         // Initialize tooltip events
         setupTooltipEvents();
 
+        // Exit Trade Modal Functions
+        let currentExitTrade = null;
+
+        const showExitTradeModal = (trade) => {
+            currentExitTrade = trade;
+            const modal = document.getElementById('exit-trade-modal');
+            
+            // Populate trade details
+            document.getElementById('exit-trade-symbol').textContent = trade.asset || 'Unknown';
+            document.getElementById('exit-trade-type').value = trade.direction || 'Long';
+            document.getElementById('exit-trade-quantity').value = trade.quantity || 0;
+            document.getElementById('exit-trade-entry-price').value = trade.entry_price || 0;
+            document.getElementById('exit-trade-stop-loss').value = trade.stop_loss || 0;
+            document.getElementById('exit-trade-target').value = trade.target || 0;
+            document.getElementById('exit-trade-total-amount').value = formatCurrency((trade.entry_price || 0) * (trade.quantity || 0));
+            
+            // Set default exit quantity to full quantity
+            document.getElementById('exit-trade-exit-quantity').value = trade.quantity || 0;
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('exit-trade-date').value = today;
+            
+            // Clear exit fields
+            document.getElementById('exit-trade-price').value = '';
+            document.getElementById('exit-trade-brokerage').value = '';
+            document.getElementById('exit-trade-charges').value = '';
+            
+            // Clear additional fields
+            document.getElementById('exit-strategy').value = trade.strategy || 'Price Action';
+            document.getElementById('exit-outcome-summary').value = 'Select Outcome Summary';
+            document.getElementById('exit-emotional-state').value = '';
+            document.getElementById('exit-trade-notes').value = '';
+            
+            // Clear mistake checkboxes
+            document.querySelectorAll('input[name="exit-mistakes"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Clear P&L calculations
+            document.getElementById('exit-gross-pnl').value = '₹0.00';
+            document.getElementById('exit-total-charges').value = '₹0.00';
+            document.getElementById('exit-net-pnl').value = '₹0.00';
+            document.getElementById('exit-pnl-percentage').value = '0.00%';
+            
+            modal.classList.remove('hidden');
+        };
+
+        const hideExitTradeModal = () => {
+            const modal = document.getElementById('exit-trade-modal');
+            modal.classList.add('hidden');
+            currentExitTrade = null;
+        };
+
+        const updateExitCalculations = () => {
+            if (!currentExitTrade) return;
+            
+            const entryPrice = parseFloat(currentExitTrade.entry_price) || 0;
+            const quantity = parseFloat(currentExitTrade.quantity) || 0;
+            const exitPrice = parseFloat(document.getElementById('exit-trade-price').value) || 0;
+            const exitQuantity = parseFloat(document.getElementById('exit-trade-exit-quantity').value) || 0;
+            const brokerage = parseFloat(document.getElementById('exit-trade-brokerage').value) || 0;
+            const charges = parseFloat(document.getElementById('exit-trade-charges').value) || 0;
+            
+            if (entryPrice && exitPrice && exitQuantity) {
+                const directionMultiplier = currentExitTrade.direction === 'Short' ? -1 : 1;
+                const grossPnl = (exitPrice - entryPrice) * exitQuantity * directionMultiplier;
+                const totalCharges = brokerage + charges;
+                const netPnl = grossPnl - totalCharges;
+                const totalInvestment = entryPrice * quantity; // Always use full quantity for percentage
+                const pnlPercentage = totalInvestment > 0 ? (netPnl / totalInvestment) * 100 : 0;
+                
+                document.getElementById('exit-gross-pnl').value = formatCurrency(grossPnl);
+                document.getElementById('exit-total-charges').value = formatCurrency(totalCharges);
+                document.getElementById('exit-net-pnl').value = formatCurrency(netPnl);
+                document.getElementById('exit-pnl-percentage').value = `${pnlPercentage.toFixed(2)}%`;
+            }
+        };
+
+        // Event listeners for exit trade modal
+        document.addEventListener('DOMContentLoaded', () => {
+            const exitModal = document.getElementById('exit-trade-modal');
+            const exitCloseBtn = document.getElementById('exit-trade-close');
+            const exitCancelBtn = document.getElementById('exit-trade-cancel');
+            const exitSubmitBtn = document.getElementById('exit-trade-submit');
+            
+            // Close modal events
+            exitCloseBtn?.addEventListener('click', hideExitTradeModal);
+            exitCancelBtn?.addEventListener('click', hideExitTradeModal);
+            
+            // Close modal when clicking outside
+            exitModal?.addEventListener('click', (e) => {
+                if (e.target === exitModal) {
+                    hideExitTradeModal();
+                }
+            });
+            
+            // Real-time calculations
+            const calculationInputs = ['exit-trade-price', 'exit-trade-exit-quantity', 'exit-trade-brokerage', 'exit-trade-charges'];
+            calculationInputs.forEach(id => {
+                document.getElementById(id)?.addEventListener('input', updateExitCalculations);
+            });
+            
+            // Submit exit trade
+            exitSubmitBtn?.addEventListener('click', async () => {
+                if (!currentExitTrade) return;
+                
+                const exitDate = document.getElementById('exit-trade-date').value;
+                const exitTime = document.getElementById('exit-trade-time').value;
+                const exitPrice = parseFloat(document.getElementById('exit-trade-price').value);
+                const exitQuantity = parseFloat(document.getElementById('exit-trade-exit-quantity').value);
+                const brokerage = parseFloat(document.getElementById('exit-trade-brokerage').value) || 0;
+                const charges = parseFloat(document.getElementById('exit-trade-charges').value) || 0;
+                
+                if (!exitDate || !exitPrice || !exitQuantity) {
+                    alert('Please fill in all required fields (Exit Date, Exit Price, Exit Quantity)');
+                    return;
+                }
+                
+                if (exitQuantity > currentExitTrade.quantity) {
+                    alert('Exit quantity cannot be greater than the original quantity');
+                    return;
+                }
+                
+                try {
+                    // Prepare exit data
+                    const exitData = {
+                        ...currentExitTrade,
+                        exit_date: exitDate,
+                        exit_time: exitTime,
+                        exit_price: exitPrice,
+                        exit_quantity: exitQuantity,
+                        brokerage: brokerage,
+                        other_fees: charges,
+                        strategy: document.getElementById('exit-strategy').value,
+                        outcomeSummary: document.getElementById('exit-outcome-summary').value,
+                        emotionalState: document.getElementById('exit-emotional-state').value,
+                        reasons: document.getElementById('exit-trade-notes').value,
+                        mistakes: Array.from(document.querySelectorAll('input[name="exit-mistakes"]:checked')).map(cb => cb.value)
+                    };
+                    
+                    // Determine if it's a partial exit
+                    const isPartialExit = exitQuantity < currentExitTrade.quantity;
+                    
+                    if (isPartialExit) {
+                        // For partial exit, update the existing trade
+                        await dataStore.upsertTrade(exitData);
+                        showToast('Partial exit recorded successfully!', 'success');
+                    } else {
+                        // For full exit, mark as closed
+                        exitData.status = 'Closed';
+                        await dataStore.upsertTrade(exitData);
+                        showToast('Trade exited successfully!', 'success');
+                    }
+                    
+                    // Refresh data
+                    appState.trades = await dataStore.getTrades();
+                    renderTradeHistory();
+                    renderDashboard();
+                    renderFundManagement();
+                    
+                    hideExitTradeModal();
+                } catch (error) {
+                    console.error('Error exiting trade:', error);
+                    showToast('Error exiting trade. Please try again.', 'error');
+                }
+            });
+        });
+
+        // Partial Exit Details Modal
+        const showPartialExitDetailsModal = (trade) => {
+            const modal = document.getElementById('partial-exit-details-modal');
+            if (!modal) {
+                // Create modal if it doesn't exist
+                createPartialExitDetailsModal();
+            }
+            
+            // Populate symbol
+            document.getElementById('partial-exit-symbol').textContent = trade.asset || 'Unknown';
+            
+            // For now, we'll simulate multiple exits since we don't have a separate exits table
+            // In a real implementation, you'd have a separate table for partial exits
+            const exits = [];
+            
+            // If this is a partial exit trade, create exit data
+            if (trade.exit_quantity && trade.exit_quantity > 0) {
+                const exitQty = trade.exit_quantity;
+                const entryPrice = trade.entry_price || 0;
+                const exitPrice = trade.exit_price || 0;
+                const directionMultiplier = trade.direction === 'Short' ? -1 : 1;
+                
+                // Calculate P&L for this exit
+                const grossPnl = (exitPrice - entryPrice) * exitQty * directionMultiplier;
+                const totalCharges = (trade.brokerage || 0) + (trade.other_fees || 0);
+                const netPnl = grossPnl - totalCharges;
+                const totalInvestment = entryPrice * trade.quantity; // Use full quantity for percentage calculation
+                const pnlPercentage = totalInvestment > 0 ? (netPnl / totalInvestment) * 100 : 0;
+                
+                exits.push({
+                    date: trade.exit_date || '—',
+                    price: exitPrice,
+                    quantity: exitQty,
+                    pnl: netPnl,
+                    pnlPercentage: pnlPercentage
+                });
+            }
+            
+            // Update exit count
+            document.getElementById('partial-exit-count').textContent = `${exits.length} Exit${exits.length !== 1 ? 's' : ''}`;
+            
+            // Calculate summary
+            const totalExited = exits.reduce((sum, exit) => sum + exit.quantity, 0);
+            const remaining = (trade.quantity || 0) - totalExited;
+            const cumulativePnl = exits.reduce((sum, exit) => sum + exit.pnl, 0);
+            
+            // Update summary
+            document.getElementById('partial-exit-total-exited').textContent = `${totalExited} units`;
+            document.getElementById('partial-exit-remaining').textContent = `${remaining} units`;
+            document.getElementById('partial-exit-cumulative-pnl').textContent = formatCurrency(cumulativePnl);
+            
+            // Color code cumulative P&L
+            const cumulativePnlElement = document.getElementById('partial-exit-cumulative-pnl');
+            if (cumulativePnl > 0) {
+                cumulativePnlElement.style.color = '#10b981'; // Green for profit
+            } else if (cumulativePnl < 0) {
+                cumulativePnlElement.style.color = '#ef4444'; // Red for loss
+            } else {
+                cumulativePnlElement.style.color = 'var(--text-primary)'; // Default color
+            }
+            
+            // Populate exits table
+            const tableBody = document.getElementById('partial-exit-table-body');
+            if (exits.length > 0) {
+                tableBody.innerHTML = exits.map(exit => {
+                    const pnlColor = exit.pnl > 0 ? '#10b981' : exit.pnl < 0 ? '#ef4444' : 'var(--text-primary)';
+                    const pnlSign = exit.pnl > 0 ? '+' : '';
+                    const pnlPercentageSign = exit.pnlPercentage > 0 ? '+' : '';
+                    
+                    return `
+                        <tr>
+                            <td class="px-4 py-3 text-sm" style="color: var(--text-primary);">${exit.date}</td>
+                            <td class="px-4 py-3 text-sm" style="color: var(--text-primary);">₹${exit.price.toFixed(2)}</td>
+                            <td class="px-4 py-3 text-sm" style="color: var(--text-primary);">${exit.quantity}</td>
+                            <td class="px-4 py-3 text-sm font-semibold" style="color: ${pnlColor};">${pnlSign}₹${exit.pnl.toFixed(2)}</td>
+                            <td class="px-4 py-3 text-sm font-semibold" style="color: ${pnlColor};">${pnlPercentageSign}${exit.pnlPercentage.toFixed(3)}%</td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-sm" style="color: var(--text-secondary);">
+                            No exits recorded
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            modal.classList.remove('hidden');
+        };
+
+        const createPartialExitDetailsModal = () => {
+            const modalHTML = `
+                <div id="partial-exit-details-modal" class="modal-overlay hidden">
+                    <div class="modal-content max-w-4xl" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+                        <!-- Header -->
+                        <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: var(--border-color);">
+                            <div class="flex items-center space-x-3">
+                                <h2 class="text-2xl font-bold" style="color: var(--text-primary);">Partial Exit Breakdown</h2>
+                                <span id="partial-exit-symbol" class="px-3 py-1 text-sm font-semibold rounded-full" style="background-color: var(--bg-secondary); color: var(--text-primary);"></span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span id="partial-exit-count" class="px-2 py-1 text-xs font-semibold rounded-full" style="background-color: var(--bg-secondary); color: var(--text-primary);">0 Exits</span>
+                                <button id="partial-exit-close" class="p-2 rounded-full hover:bg-gray-100" style="color: var(--text-secondary);">
+                                    <i data-feather="x" class="h-5 w-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Summary Section -->
+                        <div class="mb-6 p-4 rounded-lg" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color);">
+                            <div class="grid grid-cols-3 gap-6">
+                                <div class="text-center">
+                                    <p class="text-sm font-medium mb-1" style="color: var(--text-secondary);">Total Exited</p>
+                                    <p id="partial-exit-total-exited" class="text-lg font-bold" style="color: var(--text-primary);">0 units</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm font-medium mb-1" style="color: var(--text-secondary);">Remaining</p>
+                                    <p id="partial-exit-remaining" class="text-lg font-bold" style="color: var(--text-primary);">0 units</p>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm font-medium mb-1" style="color: var(--text-secondary);">Cumulative P&L</p>
+                                    <p id="partial-exit-cumulative-pnl" class="text-lg font-bold" style="color: var(--text-primary);">₹0.00</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Exits Table -->
+                        <div class="rounded-lg overflow-hidden" style="border: 1px solid var(--border-color);">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead style="background-color: var(--bg-secondary);">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">Exit Date</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">Price</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">Quantity</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">P&L</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" style="color: var(--text-secondary);">P&L %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="partial-exit-table-body" class="divide-y" style="background-color: var(--bg-primary); border-color: var(--border-color);">
+                                        <!-- Exit rows will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end mt-6 pt-4 border-t" style="border-color: var(--border-color);">
+                            <button id="partial-exit-close-btn" class="px-4 py-2 text-sm font-medium text-white rounded-md hover:bg-gray-600" style="background-color: var(--text-primary);">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // Add event listeners
+            document.getElementById('partial-exit-close')?.addEventListener('click', () => {
+                document.getElementById('partial-exit-details-modal').classList.add('hidden');
+            });
+            document.getElementById('partial-exit-close-btn')?.addEventListener('click', () => {
+                document.getElementById('partial-exit-details-modal').classList.add('hidden');
+            });
+            document.getElementById('partial-exit-details-modal')?.addEventListener('click', (e) => {
+                if (e.target.id === 'partial-exit-details-modal') {
+                    document.getElementById('partial-exit-details-modal').classList.add('hidden');
+                }
+            });
+        };
+
     </script>
+
+    <!-- Exit Trade Modal -->
+    <div id="exit-trade-modal" class="modal-overlay hidden">
+        <div class="modal-content max-w-5xl" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6 pb-4 border-b" style="border-color: var(--border-color);">
+                <div class="flex items-center space-x-3">
+                    <h2 id="exit-trade-title" class="text-2xl font-bold" style="color: var(--text-primary);">Exit Trade</h2>
+                    <span id="exit-trade-symbol" class="px-3 py-1 text-sm font-semibold rounded-full" style="background-color: var(--bg-secondary); color: var(--text-primary);"></span>
+                    <span id="exit-trade-status" class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Open</span>
+                </div>
+                <button id="exit-trade-close" class="p-2 rounded-full hover:bg-gray-100" style="color: var(--text-secondary);">
+                    <i data-feather="x" class="h-5 w-5"></i>
+                </button>
+            </div>
+
+            <!-- Main Content -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Trade Details (Left Column) -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold" style="color: var(--text-primary);">Trade Details</h3>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Type</label>
+                                <input type="text" id="exit-trade-type" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Quantity</label>
+                                <input type="text" id="exit-trade-quantity" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Entry Price</label>
+                                <input type="text" id="exit-trade-entry-price" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Stop Loss</label>
+                                <input type="text" id="exit-trade-stop-loss" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Target Price</label>
+                                <input type="text" id="exit-trade-target" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Total Amount</label>
+                                <input type="text" id="exit-trade-total-amount" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exit Details (Middle Column) -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold" style="color: var(--text-primary);">Exit Details</h3>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Exit Date</label>
+                                <input type="date" id="exit-trade-date" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Exit Time</label>
+                                <input type="time" id="exit-trade-time" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Exit Price</label>
+                            <input type="number" id="exit-trade-price" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);" step="0.01" placeholder="Enter exit price">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Exit Quantity</label>
+                            <input type="number" id="exit-trade-exit-quantity" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);" step="1" placeholder="Enter exit quantity">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Brokerage</label>
+                                <input type="number" id="exit-trade-brokerage" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);" step="0.01" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Charges</label>
+                                <input type="number" id="exit-trade-charges" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);" step="0.01" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- P&L Summary (Right Column) -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold" style="color: var(--text-primary);">P&L Summary</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Gross P&L</label>
+                            <input type="text" id="exit-gross-pnl" class="w-full px-3 py-2 text-sm border rounded-md font-semibold" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Total Charges</label>
+                            <input type="text" id="exit-total-charges" class="w-full px-3 py-2 text-sm border rounded-md font-semibold" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Net P&L Amount</label>
+                            <input type="text" id="exit-net-pnl" class="w-full px-3 py-2 text-sm border rounded-md font-semibold" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">P&L (%)</label>
+                            <input type="text" id="exit-pnl-percentage" class="w-full px-3 py-2 text-sm border rounded-md font-semibold" style="background-color: var(--bg-secondary); border-color: var(--border-color); color: var(--text-primary);" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Fields -->
+            <div class="mt-6 pt-6 border-t" style="border-color: var(--border-color);">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Strategy Tag</label>
+                        <select id="exit-strategy" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);">
+                            <option value="Price Action">Price Action</option>
+                            <option value="Support/Resistance">Support/Resistance</option>
+                            <option value="Trend Following">Trend Following</option>
+                            <option value="Breakout">Breakout</option>
+                            <option value="Reversal">Reversal</option>
+                            <option value="Scalping">Scalping</option>
+                            <option value="Swing Trading">Swing Trading</option>
+                            <option value="News Trading">News Trading</option>
+                            <option value="Technical Analysis">Technical Analysis</option>
+                            <option value="Fundamental Analysis">Fundamental Analysis</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Outcome Summary</label>
+                        <select id="exit-outcome-summary" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);">
+                            <option value="Select Outcome Summary">Select Outcome Summary</option>
+                            <option value="Target Hit">Target Hit</option>
+                            <option value="Stop Loss Hit">Stop Loss Hit</option>
+                            <option value="Exited Early (Profit)">Exited Early (Profit)</option>
+                            <option value="Exited Early (Loss)">Exited Early (Loss)</option>
+                            <option value="Break Even">Break Even</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Emotional State</label>
+                        <select id="exit-emotional-state" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);">
+                            <option value="">Select Emotional State</option>
+                            <option value="Confident">Confident</option>
+                            <option value="Nervous">Nervous</option>
+                            <option value="Excited">Excited</option>
+                            <option value="Fearful">Fearful</option>
+                            <option value="Greedy">Greedy</option>
+                            <option value="Calm">Calm</option>
+                            <option value="Frustrated">Frustrated</option>
+                            <option value="Overconfident">Overconfident</option>
+                            <option value="Indecisive">Indecisive</option>
+                            <option value="Patient">Patient</option>
+                            <option value="Impatient">Impatient</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Mistakes Made</label>
+                        <div class="grid grid-cols-1 gap-1 max-h-20 overflow-y-auto">
+                            <label class="flex items-center text-xs">
+                                <input type="checkbox" name="exit-mistakes" value="FOMO" class="mr-2 h-3 w-3">
+                                <span style="color: var(--text-primary);">FOMO</span>
+                            </label>
+                            <label class="flex items-center text-xs">
+                                <input type="checkbox" name="exit-mistakes" value="Revenge Trading" class="mr-2 h-3 w-3">
+                                <span style="color: var(--text-primary);">Revenge Trading</span>
+                            </label>
+                            <label class="flex items-center text-xs">
+                                <input type="checkbox" name="exit-mistakes" value="Overtrading" class="mr-2 h-3 w-3">
+                                <span style="color: var(--text-primary);">Overtrading</span>
+                            </label>
+                            <label class="flex items-center text-xs">
+                                <input type="checkbox" name="exit-mistakes" value="No Stop Loss" class="mr-2 h-3 w-3">
+                                <span style="color: var(--text-primary);">No Stop Loss</span>
+                            </label>
+                            <label class="flex items-center text-xs">
+                                <input type="checkbox" name="exit-mistakes" value="Emotional Trading" class="mr-2 h-3 w-3">
+                                <span style="color: var(--text-primary);">Emotional Trading</span>
+                            </label>
+                            <label class="flex items-center text-xs">
+                                <input type="checkbox" name="exit-mistakes" value="Poor Risk Management" class="mr-2 h-3 w-3">
+                                <span style="color: var(--text-primary);">Poor Risk Management</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-xs font-medium mb-1" style="color: var(--text-secondary);">Trade Journal & Notes</label>
+                    <textarea id="exit-trade-notes" rows="2" class="w-full px-3 py-2 text-sm border rounded-md" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);" placeholder="Enter your trade notes and observations..."></textarea>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t" style="border-color: var(--border-color);">
+                <button id="exit-trade-cancel" class="px-4 py-2 text-sm font-medium border rounded-md hover:bg-gray-50" style="background-color: var(--bg-primary); border-color: var(--border-color); color: var(--text-primary);">
+                    Cancel
+                </button>
+                <button id="exit-trade-submit" class="px-4 py-2 text-sm font-medium text-white rounded-md hover:bg-gray-800" style="background-color: var(--text-primary);">
+                    Exit Trade
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Custom Tooltip Container for Accessibility -->
     <div id="chartjs-custom-tooltip" aria-live="polite" role="tooltip" aria-hidden="true"></div>
